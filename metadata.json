@@ -1,0 +1,6 @@
+{
+  "name": "Portal do Motorista",
+  "description": "App operacional para motoristas executivos da frota Litoral em Movimento com gestão de viagens, rotas ao vivo, etapas de transfer e controle financeiro de ganhos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

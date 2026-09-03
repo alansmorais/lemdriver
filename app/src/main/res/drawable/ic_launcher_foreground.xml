@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:translateX="18"
+        android:translateY="18"
+        android:scaleX="0.666"
+        android:scaleY="0.666">
+        <!-- Pin Base Circle & Point -->
+        <path
+            android:fillColor="#F59E0B"
+            android:pathData="M54,10 C34.12,10 18,26.12 18,46 C18,73 54,98 54,98 C54,98 90,73 90,46 C90,26.12 73.88,10 54,10 Z" />
+        <!-- Inner Dark Center -->
+        <path
+            android:fillColor="#0F172A"
+            android:pathData="M54,20 C39.64,20 28,31.64 28,46 C28,59.36 39.64,71 54,71 C68.36,71 80,59.36 80,46 C80,31.64 68.36,20 54,20 Z" />
+        <!-- Executive Car Silhouette / Wave in Gold and White -->
+        <path
+            android:fillColor="#F59E0B"
+            android:pathData="M36,49 C38,44 43,41 49,40 L59,40 C65,41 70,44 72,49 L75,53 C76,54.5 75,57 73,57 L69,57 C69,59.2 67.2,61 65,61 C62.8,61 61,59.2 61,57 L47,57 C47,59.2 45.2,61 43,61 C40.8,61 39,59.2 39,57 L35,57 C33,57 32,54.5 33,53 Z M42,47 L47,47 C48,47 49,46 49,45 L48,43 C44,44 42.5,45.5 42,47 Z M66,47 C65.5,45.5 64,44 60,43 L59,45 C59,46 60,47 61,47 Z" />
+        <!-- Fast Motion Wave -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M34,46 C40,43 48,47 54,44 C60,41 68,43 74,48 C72,47 64,45 58,47 C52,49 44,46 34,46 Z" />
+    </group>
+</vector>
