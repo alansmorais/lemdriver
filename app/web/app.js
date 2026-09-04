@@ -22,6 +22,8 @@ let appState = {
 
 let knownTripIds = new Set();
 let knownAssignedTripIds = new Set();
+let hasInitializedTripIds = false;
+let hasInitializedAssignedIds = false;
 let pollInterval = null;
 
 // --- Web Audio API Synthesizer (Works on iPhone Safari and Android) ---
@@ -197,16 +199,26 @@ async function syncWithBackend(silent = false) {
 
             // Detect new assignments specifically for logged in driver
             const myAssigned = mappedTrips.filter(t => t.isAssignedToMe && t.status !== 'CONCLUIDO' && t.status !== 'RECUSADO');
-            if (appState.isLoggedIn && knownAssignedTripIds.size > 0) {
-                const newAssigned = myAssigned.filter(t => !knownAssignedTripIds.has(t.id));
-                if (newAssigned.length > 0) {
-                    triggerAssignmentAlert(newAssigned[0]);
+            if (appState.isLoggedIn) {
+                if (!hasInitializedAssignedIds) {
+                    knownAssignedTripIds.clear();
+                    myAssigned.forEach(t => knownAssignedTripIds.add(t.id));
+                    hasInitializedAssignedIds = true;
+                } else {
+                    const newAssigned = myAssigned.filter(t => !knownAssignedTripIds.has(t.id));
+                    if (newAssigned.length > 0) {
+                        triggerAssignmentAlert(newAssigned[0]);
+                    }
                 }
             }
 
             // Detect general new fleet reservations
             const currentIds = new Set(mappedTrips.map(t => t.id));
-            if (knownTripIds.size > 0) {
+            if (!hasInitializedTripIds) {
+                knownTripIds.clear();
+                currentIds.forEach(id => knownTripIds.add(id));
+                hasInitializedTripIds = true;
+            } else {
                 const newFleetRes = mappedTrips.filter(t => !knownTripIds.has(t.id));
                 if (newFleetRes.length > 0 && !appState.newlyAssignedTrip) {
                     playDispatchChime();

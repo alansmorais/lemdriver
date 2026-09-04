@@ -70,6 +70,8 @@ class DriverRepository(private val context: Context? = null) {
 
     private val knownTripIds = mutableSetOf<String>()
     private val knownAssignedTripIds = mutableSetOf<String>()
+    private var hasInitializedTripIds = false
+    private var hasInitializedAssignedIds = false
 
     init {
         loadInitialBackendData()
@@ -157,31 +159,40 @@ class DriverRepository(private val context: Context? = null) {
                 it.isAssignedToMe && it.status != com.example.model.TripStatusType.CONCLUIDO && it.status != com.example.model.TripStatusType.RECUSADO
             }
 
-            if (_isLoggedIn.value && knownAssignedTripIds.isNotEmpty()) {
-                val newAssignedToMe = myAssignedTrips.filter { it.id !in knownAssignedTripIds }
-                if (newAssignedToMe.isNotEmpty()) {
-                    val assignedTrip = newAssignedToMe.first()
-                    _newlyAssignedTrip.value = assignedTrip
-                    NotificationSoundHelper.playNewReservationSound(context)
+            if (_isLoggedIn.value) {
+                if (!hasInitializedAssignedIds) {
+                    knownAssignedTripIds.clear()
+                    knownAssignedTripIds.addAll(myAssignedTrips.map { it.id })
+                    hasInitializedAssignedIds = true
+                } else {
+                    val newAssignedToMe = myAssignedTrips.filter { it.id !in knownAssignedTripIds }
+                    if (newAssignedToMe.isNotEmpty()) {
+                        val assignedTrip = newAssignedToMe.first()
+                        _newlyAssignedTrip.value = assignedTrip
+                        NotificationSoundHelper.playNewReservationSound(context)
 
-                    val newNotif = FleetNotification(
-                        id = "notif-assigned-${System.currentTimeMillis()}-${assignedTrip.id}",
-                        title = "🚨 Corrida Atribuída: ${assignedTrip.code}",
-                        description = "${assignedTrip.origin.title} ➔ ${assignedTrip.destination.title} (${assignedTrip.timeLabel})",
-                        timeAgo = "Agora",
-                        isUrgent = true,
-                        iconName = "notifications_active"
-                    )
-                    _notifications.update { listOf(newNotif) + it }
+                        val newNotif = FleetNotification(
+                            id = "notif-assigned-${System.currentTimeMillis()}-${assignedTrip.id}",
+                            title = "🚨 Corrida Atribuída: ${assignedTrip.code}",
+                            description = "${assignedTrip.origin.title} ➔ ${assignedTrip.destination.title} (${assignedTrip.timeLabel})",
+                            timeAgo = "Agora",
+                            isUrgent = true,
+                            iconName = "notifications_active"
+                        )
+                        _notifications.update { listOf(newNotif) + it }
+                    }
                 }
             }
 
             // 2. Detect general new reservations across the fleet
             val currentIds = mapped.map { it.id }.toSet()
-            if (knownTripIds.isNotEmpty()) {
+            if (!hasInitializedTripIds) {
+                knownTripIds.clear()
+                knownTripIds.addAll(currentIds)
+                hasInitializedTripIds = true
+            } else {
                 val newReservations = mapped.filter { it.id !in knownTripIds }
                 if (newReservations.isNotEmpty()) {
-                    // Trigger sound & notif
                     NotificationSoundHelper.playNewReservationSound(context)
 
                     val newNotifs = newReservations.map { newTrip ->
