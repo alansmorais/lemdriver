@@ -40,7 +40,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     </style>
 </head>
-<body class="h-full bg-slateBg text-slate900 flex flex-col antialiased">
+<body class="h-full bg-slateBg text-slate900 flex flex-col antialiased md:justify-center md:py-8">
 
     <!-- Toast Notification Banner -->
     <div id="toast-container" class="fixed top-4 left-4 right-4 z-50 flex flex-col items-center pointer-events-none transition-all duration-300 transform -translate-y-20 opacity-0">
@@ -50,13 +50,13 @@
         </div>
     </div>
 
-    <!-- Main Container -->
-    <div id="app" class="flex-1 flex flex-col max-w-lg mx-auto w-full bg-white shadow-xl relative overflow-hidden">
+    <!-- Main Responsive Container (Mobile app look on mobile, expansive dashboard on desktop) -->
+    <div id="app" class="flex-1 md:flex-initial flex flex-col w-full md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto bg-white md:rounded-3xl shadow-2xl border border-slate-200 relative overflow-hidden min-h-screen md:min-h-[85vh] md:max-h-[92vh]">
         
         <!-- Top App Header (Visible when logged in) -->
-        <header id="app-header" class="hidden bg-slate950 text-white px-4 py-3 flex items-center justify-between border-b border-slate800">
+        <header id="app-header" class="hidden bg-slate950 text-white px-5 py-3.5 flex items-center justify-between border-b border-slate800">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full bg-amberVibrant flex items-center justify-center text-slate900 font-extrabold text-sm" id="header-driver-initials">
+                <div class="w-10 h-10 rounded-full bg-amberVibrant flex items-center justify-center text-slate900 font-extrabold text-sm shadow" id="header-driver-initials">
                     ES
                 </div>
                 <div>
@@ -64,24 +64,38 @@
                     <p class="text-xs text-amber-400 font-medium" id="header-vehicle-badge">Spin Premier • SP-LIT7A24</p>
                 </div>
             </div>
+            
+            <!-- Desktop Navigation Tabs (Hidden on mobile) -->
+            <div class="hidden md:flex items-center space-x-1 bg-slate900 p-1 rounded-xl border border-slate-800">
+                <button onclick="switchTab('viagens')" id="desktop-tab-viagens" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-amberVibrant text-slate950">Escalas</button>
+                <button onclick="switchTab('rota')" id="desktop-tab-rota" class="px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all">Em Rota</button>
+                <button onclick="switchTab('ganhos')" id="desktop-tab-ganhos" class="px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all">Ganhos</button>
+                <button onclick="switchTab('perfil')" id="desktop-tab-perfil" class="px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all">Perfil</button>
+            </div>
+
             <div class="flex items-center space-x-2">
-                <button onclick="toggleAudioAndPushPermissions()" id="sound-badge" class="bg-emerald-900/60 text-emerald-300 border border-emerald-700 px-2.5 py-1 rounded-full text-xs font-bold flex items-center space-x-1">
+                <button onclick="toggleAudioAndPushPermissions()" id="sound-badge" class="bg-emerald-900/60 text-emerald-300 border border-emerald-700 px-3 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1 shadow-sm">
                     <span class="material-symbols-outlined text-sm">volume_up</span>
                     <span id="sound-status-text">Som Ativo</span>
                 </button>
-                <button onclick="openProfile()" class="w-9 h-9 rounded-full bg-slate800 flex items-center justify-center text-slate300 hover:bg-slate700">
+                <button onclick="openProfile()" class="w-9 h-9 rounded-full bg-slate800 flex items-center justify-center text-slate300 hover:bg-slate700 transition-all">
                     <span class="material-symbols-outlined text-lg">person</span>
                 </button>
             </div>
         </header>
 
         <!-- Dynamic Screen Content Area -->
-        <main class="flex-1 overflow-y-auto pb-24" id="main-content">
-            <!-- Content dynamically rendered via app.js -->
+        <main class="flex-1 overflow-y-auto pb-24 md:pb-6" id="main-content">
+            <!-- Graceful Loading State to prevent blank white screen -->
+            <div class="flex flex-col items-center justify-center h-96 p-8 text-center space-y-4">
+                <div class="w-12 h-12 border-4 border-amberVibrant border-t-transparent rounded-full animate-spin"></div>
+                <h2 class="text-lg font-bold text-slate900">Carregando LEM Motoristas...</h2>
+                <p class="text-xs text-slate-500 max-w-xs">Sincronizando com a Central de Despacho Litoral em Movimento.</p>
+            </div>
         </main>
 
-        <!-- Bottom Navigation Bar (Visible when logged in) -->
-        <nav id="bottom-nav" class="hidden absolute bottom-0 left-0 right-0 bg-slate950 border-t border-slate800 px-3 py-2 flex items-center justify-around z-30">
+        <!-- Bottom Navigation Bar (Visible on mobile only when logged in) -->
+        <nav id="bottom-nav" class="hidden absolute bottom-0 left-0 right-0 bg-slate950 border-t border-slate800 px-3 py-2.5 flex items-center justify-around z-30 md:hidden">
             <button onclick="switchTab('viagens')" id="nav-viagens" class="flex flex-col items-center text-amberVibrant transition-all">
                 <span class="material-symbols-outlined text-2xl">directions_car</span>
                 <span class="text-[10px] font-bold mt-0.5">Escalas</span>
@@ -102,8 +116,8 @@
     </div>
 
     <!-- New Trip Assignment Pop-up Modal -->
-    <div id="assignment-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate200 flex flex-col items-center text-center">
+    <div id="assignment-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate200 flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
             <div class="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 mb-3 shadow-inner">
                 <span class="material-symbols-outlined text-3xl animate-pulse">notifications_active</span>
             </div>
@@ -115,15 +129,15 @@
             </div>
 
             <div class="flex flex-col w-full gap-2 mt-5">
-                <button onclick="acceptAndStartAssignedTrip()" class="w-full bg-amberVibrant hover:bg-amber-500 text-slate950 font-extrabold py-3.5 rounded-xl shadow-lg flex items-center justify-center space-x-2">
+                <button onclick="acceptAndStartAssignedTrip()" class="w-full bg-amberVibrant hover:bg-amber-500 text-slate950 font-extrabold py-3.5 rounded-xl shadow-lg flex items-center justify-center space-x-2 transition-all">
                     <span class="material-symbols-outlined">navigation</span>
                     <span>ACEITAR & INICIAR ROTA</span>
                 </button>
                 <div class="flex gap-2">
-                    <button onclick="viewAssignedTripInList()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate800 font-bold py-2.5 rounded-xl text-xs">
+                    <button onclick="viewAssignedTripInList()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate800 font-bold py-2.5 rounded-xl text-xs transition-all">
                         Ver na Lista
                     </button>
-                    <button onclick="closeAssignmentModal()" class="flex-1 bg-slate-900 hover:bg-slate800 text-white font-bold py-2.5 rounded-xl text-xs">
+                    <button onclick="closeAssignmentModal()" class="flex-1 bg-slate900 hover:bg-slate800 text-white font-bold py-2.5 rounded-xl text-xs transition-all">
                         Entendido (OK)
                     </button>
                 </div>
