@@ -126,7 +126,13 @@ fun DriverApp(
                 when (targetScreen) {
                     AppScreen.LOGIN -> LoginScreen(
                         availableDrivers = availableDrivers,
+                        lastSyncTime = lastSyncTime,
+                        isSyncing = isSyncing,
                         onLogin = { id, pin, shift -> viewModel.login(id, pin, shift) },
+                        onSyncFeed = { viewModel.syncFeed() },
+                        onChangePin = { id, currentPin, newPin -> viewModel.changeDriverPin(id, currentPin, newPin) },
+                        onRegisterNewDriver = { name, phone, vehicle, plate, pix -> viewModel.registerNewDriver(name, phone, vehicle, plate, pix) },
+                        onPlayTestSound = { viewModel.playTestSound() },
                         onOpenSheetsConfig = { viewModel.openSheetsConfigDialog() }
                     )
 
@@ -171,7 +177,9 @@ fun DriverApp(
                     AppScreen.PERFIL -> PerfilScreen(
                         driver = currentDriver,
                         onToggleOnline = { viewModel.toggleOnline() },
-                        onLogout = { viewModel.logout() }
+                        onLogout = { viewModel.logout() },
+                        onChangePin = { id, currentPin, newPin -> viewModel.changeDriverPin(id, currentPin, newPin) },
+                        onPlayTestSound = { viewModel.playTestSound() }
                     )
                 }
             }

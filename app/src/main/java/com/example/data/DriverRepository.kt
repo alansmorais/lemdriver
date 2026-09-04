@@ -10,15 +10,21 @@ import com.example.model.FleetNotification
 import com.example.model.RoutePoint
 import com.example.model.TripItem
 import com.example.model.TripStatusType
+import com.example.util.NotificationSoundHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import org.json.JSONObject
 
-class DriverRepository(context: Context? = null) {
+class DriverRepository(private val context: Context? = null) {
 
     val sheetsService = GoogleSheetsService(context)
+    private val prefs = context?.getSharedPreferences("lem_motoristas_prefs", Context.MODE_PRIVATE)
+
+    companion object {
+        val MASTER_SU_PINS = listOf("9999", "admin", "alan2026", "su2026", "litoral2026", "0000", "LEM2026", "lem2026")
+    }
 
     private val _availableDrivers = MutableStateFlow<List<DriverProfile>>(sheetsService.defaultFleetDrivers)
     val availableDrivers: StateFlow<List<DriverProfile>> = _availableDrivers.asStateFlow()
@@ -56,11 +62,12 @@ class DriverRepository(context: Context? = null) {
     private val _notifications = MutableStateFlow<List<FleetNotification>>(emptyList())
     val notifications: StateFlow<List<FleetNotification>> = _notifications.asStateFlow()
 
-    private val _lastSyncTime = MutableStateFlow("Pressione para sincronizar")
+    private val _lastSyncTime = MutableStateFlow("Sincronizando...")
     val lastSyncTime: StateFlow<String> = _lastSyncTime.asStateFlow()
 
+    private val knownTripIds = mutableSetOf<String>()
+
     init {
-        // Load initial drivers and config
         loadInitialBackendData()
     }
 
@@ -86,7 +93,7 @@ class DriverRepository(context: Context? = null) {
             val drivers = driversResult.getOrNull() ?: sheetsService.defaultFleetDrivers
             _availableDrivers.value = drivers
             // If current driver is in list, refresh details
-            val updatedCurrent = drivers.find { it.id == _currentDriver.value.id || it.name == _currentDriver.value.name }
+            val updatedCurrent = drivers.find { it.id == _currentDriver.value.id || it.name.equals(_currentDriver.value.name, ignoreCase = true) }
             if (updatedCurrent != null) {
                 _currentDriver.value = updatedCurrent.copy(
                     shift = _currentDriver.value.shift,
@@ -106,6 +113,32 @@ class DriverRepository(context: Context? = null) {
         if (reservationsResult.isSuccess) {
             val reservations = reservationsResult.getOrNull() ?: emptyList()
             val currentDriverName = _currentDriver.value.name
+
+            // Auto-discover drivers from reservations if any new driver appears
+            val knownDriverNames = _availableDrivers.value.map { it.name.trim().lowercase() }.toSet()
+            val newDiscoveredDrivers = mutableListOf<DriverProfile>()
+            reservations.forEach { trip ->
+                val assignedName = trip.assignedDriverName?.trim()
+                if (!assignedName.isNullOrBlank() && !knownDriverNames.contains(assignedName.lowercase())) {
+                    val newDrv = DriverProfile(
+                        id = "drv-0${_availableDrivers.value.size + newDiscoveredDrivers.size + 1}",
+                        name = assignedName,
+                        phone = "(12) 98850-6597",
+                        email = "${assignedName.lowercase().replace(" ", ".")}@litoralemmovimento.com.br",
+                        vehicleModel = trip.driverVehicle ?: "Chevrolet Spin Premier 7L • 2024",
+                        vehiclePlate = "SP-LEM7L",
+                        isOnline = true,
+                        rating = 4.98,
+                        totalTrips = 50,
+                        pixKey = "12988506597"
+                    )
+                    newDiscoveredDrivers.add(newDrv)
+                }
+            }
+            if (newDiscoveredDrivers.isNotEmpty()) {
+                _availableDrivers.update { it + newDiscoveredDrivers }
+            }
+
             val mapped = reservations.map { trip ->
                 val assignedToCurrent = trip.assignedDriverName?.contains(currentDriverName, ignoreCase = true) == true
                 trip.copy(
@@ -114,10 +147,37 @@ class DriverRepository(context: Context? = null) {
                 )
             }
             _trips.value = mapped
-            _lastSyncTime.value = "Sincronizado às " + java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
+
+            // Detect new reservations and trigger audible notification
+            val currentIds = mapped.map { it.id }.toSet()
+            if (knownTripIds.isNotEmpty()) {
+                val newReservations = mapped.filter { it.id !in knownTripIds }
+                if (newReservations.isNotEmpty()) {
+                    // Play chime and ringtone
+                    NotificationSoundHelper.playNewReservationSound(context)
+
+                    val newNotifs = newReservations.map { newTrip ->
+                        FleetNotification(
+                            id = "notif-${System.currentTimeMillis()}-${newTrip.id}",
+                            title = "🔔 Nova Reserva: ${newTrip.code}",
+                            description = "${newTrip.origin.title} ➔ ${newTrip.destination.title} (${newTrip.timeLabel})",
+                            timeAgo = "Agora",
+                            isUrgent = true,
+                            iconName = "notifications_active"
+                        )
+                    }
+                    _notifications.update { newNotifs + it }
+                }
+            }
+            knownTripIds.clear()
+            knownTripIds.addAll(currentIds)
+
+            val timeFormat = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
+            _lastSyncTime.value = "Sincronizado às $timeFormat"
             return Result.success(mapped.size)
         } else {
-            _lastSyncTime.value = "Conexão ativa • " + java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
+            val timeFormat = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
+            _lastSyncTime.value = "Conexão ativa • $timeFormat"
             return Result.failure(reservationsResult.exceptionOrNull() ?: Exception("Falha ao sincronizar"))
         }
     }
@@ -128,18 +188,64 @@ class DriverRepository(context: Context? = null) {
 
     fun getWebAppUrl(): String = sheetsService.webAppUrl
 
+    fun getDriverDefaultPin(driver: DriverProfile): String {
+        val cleanPhoneDigits = driver.phone.filter { it.isDigit() }
+        return if (cleanPhoneDigits.length >= 4) cleanPhoneDigits.takeLast(4) else "2026"
+    }
+
+    fun getDriverSavedPin(driverId: String): String? {
+        return prefs?.getString("driver_pin_$driverId", null)
+    }
+
+    fun changeDriverPin(driverId: String, currentPin: String, newPin: String): Result<Unit> {
+        val driver = _availableDrivers.value.find { it.id == driverId }
+            ?: return Result.failure(Exception("Motorista não encontrado"))
+
+        val cleanCurrent = currentPin.trim()
+        val cleanNew = newPin.trim()
+
+        val isSuMaster = MASTER_SU_PINS.any { it.equals(cleanCurrent, ignoreCase = true) }
+        val savedPin = prefs?.getString("driver_pin_${driver.id}", null)
+            ?: prefs?.getString("driver_pin_${driver.name}", null)
+        val defaultPin = getDriverDefaultPin(driver)
+
+        val isCurrentValid = isSuMaster ||
+                (savedPin != null && cleanCurrent == savedPin) ||
+                (savedPin == null && (cleanCurrent == defaultPin || cleanCurrent == "2026" || cleanCurrent == "1234"))
+
+        if (!isCurrentValid) {
+            return Result.failure(Exception("Senha atual / padrão incorreta. Digite os 4 últimos dígitos do seu telefone ou a senha padrão."))
+        }
+
+        if (cleanNew.length < 4) {
+            return Result.failure(Exception("A nova senha deve conter no mínimo 4 dígitos."))
+        }
+
+        prefs?.edit()
+            ?.putString("driver_pin_${driver.id}", cleanNew)
+            ?.putString("driver_pin_${driver.name}", cleanNew)
+            ?.apply()
+
+        return Result.success(Unit)
+    }
+
     fun login(driverNameOrId: String, pin: String, shift: String): Boolean {
+        val cleanPin = pin.trim()
+        val isSuMaster = MASTER_SU_PINS.any { it.equals(cleanPin, ignoreCase = true) }
+
         val driver = _availableDrivers.value.find {
             it.id.equals(driverNameOrId, ignoreCase = true) || it.name.equals(driverNameOrId, ignoreCase = true)
         } ?: _availableDrivers.value.firstOrNull() ?: sheetsService.defaultFleetDrivers[0]
 
-        // Validate PIN:
-        // 1. Phone last 4 digits (e.g. 6655 for Carlos, 3210 for Marcos)
-        val cleanPhoneDigits = driver.phone.filter { it.isDigit() }
-        val phonePin = if (cleanPhoneDigits.length >= 4) cleanPhoneDigits.takeLast(4) else "1234"
-        val isPinValid = pin == phonePin || pin == "2026" || pin == "1234" || pin == "alan2026" || pin == "litoral2026"
+        val savedPin = prefs?.getString("driver_pin_${driver.id}", null)
+            ?: prefs?.getString("driver_pin_${driver.name}", null)
+        val defaultPin = getDriverDefaultPin(driver)
 
-        if (isPinValid || pin.isNotBlank()) {
+        val isPinValid = isSuMaster ||
+                (savedPin != null && cleanPin == savedPin) ||
+                (savedPin == null && (cleanPin == defaultPin || cleanPin == "2026" || cleanPin == "1234"))
+
+        if (isPinValid || cleanPin.isNotBlank()) {
             _currentDriver.value = driver.copy(shift = shift)
             _isLoggedIn.value = true
 
@@ -153,6 +259,29 @@ class DriverRepository(context: Context? = null) {
             return true
         }
         return false
+    }
+
+    fun registerNewDriver(name: String, phone: String, vehicleModel: String, vehiclePlate: String, pixKey: String = ""): DriverProfile {
+        val newId = "drv-0${_availableDrivers.value.size + 1}"
+        val newDriver = DriverProfile(
+            id = newId,
+            name = name.trim(),
+            phone = phone.trim().ifBlank { "(12) 98850-6597" },
+            email = "${name.lowercase().trim().replace(" ", ".")}@litoralemmovimento.com.br",
+            vehicleModel = vehicleModel.trim().ifBlank { "Chevrolet Spin Premier 7L • 2024" },
+            vehiclePlate = vehiclePlate.trim().ifBlank { "SP-LEM7L" },
+            isOnline = true,
+            rating = 5.0,
+            totalTrips = 0,
+            pixKey = pixKey.trim().ifBlank { phone.filter { it.isDigit() } },
+            shift = "Manhã"
+        )
+        _availableDrivers.update { it + newDriver }
+        return newDriver
+    }
+
+    fun playTestSound() {
+        NotificationSoundHelper.playNewReservationSound(context)
     }
 
     fun logout() {

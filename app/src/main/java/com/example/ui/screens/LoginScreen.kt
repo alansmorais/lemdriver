@@ -36,24 +36,34 @@ import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Pin
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,6 +82,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.DriverProfile
+import com.example.ui.components.AddDriverDialog
+import com.example.ui.components.ChangePasswordDialog
 import com.example.ui.theme.AmberDeep
 import com.example.ui.theme.AmberHighlight
 import com.example.ui.theme.AmberVibrant
@@ -86,6 +98,7 @@ import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate200
 import com.example.ui.theme.Slate300
 import com.example.ui.theme.Slate500
+import com.example.ui.theme.Slate700
 import com.example.ui.theme.Slate900
 import com.example.ui.theme.SlateBg
 import com.example.ui.theme.SurfaceContainerLow
@@ -94,16 +107,41 @@ import com.example.ui.theme.SurfaceWhite
 @Composable
 fun LoginScreen(
     availableDrivers: List<DriverProfile>,
+    lastSyncTime: String = "",
+    isSyncing: Boolean = false,
     onLogin: (driverId: String, pin: String, shift: String) -> Unit,
+    onSyncFeed: () -> Unit = {},
+    onChangePin: (driverId: String, currentPin: String, newPin: String) -> Boolean = { _, _, _ -> true },
+    onRegisterNewDriver: (name: String, phone: String, vehicleModel: String, vehiclePlate: String, pixKey: String) -> DriverProfile = { n, p, v, pl, px ->
+        DriverProfile(
+            id = "drv-new",
+            name = n,
+            phone = p,
+            vehicleModel = v,
+            vehiclePlate = pl,
+            pixKey = px
+        )
+    },
+    onPlayTestSound: () -> Unit = {},
     onOpenSheetsConfig: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var selectedDriver by remember(availableDrivers) { mutableStateOf(availableDrivers.firstOrNull()) }
+    var selectedDriver by remember(availableDrivers) {
+        mutableStateOf(availableDrivers.firstOrNull())
+    }
     var dropdownExpanded by remember { mutableStateOf(false) }
     var pinCode by remember { mutableStateOf("2026") }
     var isPinVisible by remember { mutableStateOf(false) }
     var selectedShift by remember { mutableStateOf("Manhã") }
+
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
+    var showAddDriverDialog by remember { mutableStateOf(false) }
+
+    // Synchronize immediately upon opening the screen so any new driver is fetched automatically!
+    LaunchedEffect(Unit) {
+        onSyncFeed()
+    }
 
     val infiniteTransition = rememberInfiniteTransition(label = "pulse_beacon_login")
     val beaconScale by infiniteTransition.animateFloat(
@@ -126,11 +164,11 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(horizontal = 16.dp, vertical = 10.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Server Live Header
+            // Server Live Header with instant sync trigger
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,36 +196,79 @@ fun LoginScreen(
                         )
                     }
                     Text(
-                        text = "Servidor Ao Vivo",
+                        text = if (isSyncing) "Sincronizando..." else "Servidor Ao Vivo",
                         style = MaterialTheme.typography.labelMedium.copy(color = Slate500)
                     )
                 }
 
-                Box(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(EmeraldLightBg)
-                        .clickable { onOpenSheetsConfig() }
-                        .padding(horizontal = 10.dp, vertical = 3.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    // Quick Sync Button
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(BrandBlueBg)
+                            .clickable { onSyncFeed() }
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.CloudDone,
-                            contentDescription = null,
-                            tint = EmeraldDark,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Text(
-                            text = "SERVER LIVE",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                color = EmeraldDark,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 10.sp
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            if (isSyncing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(12.dp),
+                                    strokeWidth = 2.dp,
+                                    color = BrandBlue
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = "Sincronizar",
+                                    tint = BrandBlue,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                            Text(
+                                text = "SINCRONIZAR",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = BrandBlue,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 10.sp
+                                )
                             )
-                        )
+                        }
+                    }
+
+                    // Server Live Badge
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(EmeraldLightBg)
+                            .clickable { onOpenSheetsConfig() }
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CloudDone,
+                                contentDescription = null,
+                                tint = EmeraldDark,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "SERVER LIVE",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = EmeraldDark,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 10.sp
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -198,15 +279,15 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(18.dp))
                     .background(PrimaryContainer)
-                    .padding(20.dp),
+                    .padding(18.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     com.example.ui.components.LemBrandLogo(
-                        size = 84.dp,
+                        size = 80.dp,
                         showTypography = true,
                         isDarkTheme = true
                     )
@@ -241,8 +322,12 @@ fun LoginScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    // Driver Selector
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // Driver Selector Row Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
                             text = "Motorista Cadastrado",
                             style = MaterialTheme.typography.labelMedium.copy(
@@ -251,64 +336,146 @@ fun LoginScreen(
                             )
                         )
 
-                        Box(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "${availableDrivers.size} motorista(s) no sistema",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = EmeraldDark,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            )
+                        )
+                    }
+
+                    // Driver Dropdown
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Slate100)
+                                .clickable { dropdownExpanded = true }
+                                .padding(horizontal = 12.dp, vertical = 13.dp)
+                                .testTag("driver_select_dropdown"),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Slate100)
-                                    .clickable { dropdownExpanded = true }
-                                    .padding(horizontal = 12.dp, vertical = 14.dp)
-                                    .testTag("driver_select_dropdown"),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.weight(1f)
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Badge,
-                                        contentDescription = null,
-                                        tint = Slate500,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Text(
-                                        text = selectedDriver?.let { "${it.name} (${it.vehicleModel})" } ?: "Selecione seu perfil na frota...",
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            color = if (selectedDriver != null) Slate900 else Slate500,
-                                            fontWeight = FontWeight.Medium
-                                        ),
-                                        maxLines = 1
-                                    )
-                                }
                                 Icon(
-                                    imageVector = Icons.Default.ExpandMore,
+                                    imageVector = Icons.Default.Badge,
                                     contentDescription = null,
-                                    tint = Slate500
+                                    tint = BrandBlue,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = selectedDriver?.let { "${it.name} (${it.vehicleModel})" } ?: "Selecione seu perfil na frota...",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = if (selectedDriver != null) Slate900 else Slate500,
+                                        fontWeight = FontWeight.Medium
+                                    ),
+                                    maxLines = 1
                                 )
                             }
+                            Icon(
+                                imageVector = Icons.Default.ExpandMore,
+                                contentDescription = null,
+                                tint = Slate500
+                            )
+                        }
 
-                            DropdownMenu(
-                                expanded = dropdownExpanded,
-                                onDismissRequest = { dropdownExpanded = false },
-                                modifier = Modifier.background(SurfaceWhite)
-                            ) {
-                                availableDrivers.forEach { driver ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Column {
-                                                Text(driver.name, fontWeight = FontWeight.Bold, color = Slate900)
-                                                Text("${driver.vehicleModel} • ${driver.vehiclePlate}", color = Slate500, style = MaterialTheme.typography.bodySmall)
-                                            }
-                                        },
-                                        onClick = {
-                                            selectedDriver = driver
-                                            dropdownExpanded = false
+                        DropdownMenu(
+                            expanded = dropdownExpanded,
+                            onDismissRequest = { dropdownExpanded = false },
+                            modifier = Modifier.background(SurfaceWhite)
+                        ) {
+                            availableDrivers.forEach { driver ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Column {
+                                            Text(driver.name, fontWeight = FontWeight.Bold, color = Slate900)
+                                            Text("${driver.vehicleModel} • ${driver.vehiclePlate}", color = Slate500, style = MaterialTheme.typography.bodySmall)
                                         }
-                                    )
+                                    },
+                                    onClick = {
+                                        selectedDriver = driver
+                                        dropdownExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    // Quick Actions Row: Add Driver + First Access/Change PIN
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // First Access / Change PIN button
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = BrandBlueBg,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    if (selectedDriver != null) {
+                                        showChangePasswordDialog = true
+                                    }
                                 }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Key,
+                                    contentDescription = null,
+                                    tint = BrandBlue,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "1º Acesso / Mudar Senha",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = BrandBlue,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp
+                                    )
+                                )
+                            }
+                        }
+
+                        // Add Driver button
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = Slate100,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { showAddDriverDialog = true }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PersonAdd,
+                                    contentDescription = null,
+                                    tint = Slate700,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "+ Novo Motorista",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = Slate700,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp
+                                    )
+                                )
                             }
                         }
                     }
@@ -338,7 +505,7 @@ fun LoginScreen(
 
                         OutlinedTextField(
                             value = pinCode,
-                            onValueChange = { if (it.length <= 4) pinCode = it },
+                            onValueChange = { if (it.length <= 8) pinCode = it },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .testTag("pin_code_input"),
@@ -366,8 +533,9 @@ fun LoginScreen(
                                 unfocusedBorderColor = Color.Transparent
                             )
                         )
+
                         Text(
-                            text = "PIN Padrão: 4 últimos dígitos do celular (Carlos: 6655, Marcos: 3210) ou 2026",
+                            text = "💡 1º acesso: 4 últimos dígitos do celular ou 2026. Admin SU possui acesso total mestre.",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = Slate500,
                                 fontSize = 11.sp
@@ -469,76 +637,61 @@ fun LoginScreen(
                 }
             }
 
-            // Região de Operação Info Box
+            // Admin SU and Audio Notification Bar
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(14.dp),
                 color = SurfaceContainerLow
             ) {
-                Column(
-                    modifier = Modifier.padding(14.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
+                        Icon(
+                            imageVector = Icons.Default.Shield,
+                            contentDescription = null,
+                            tint = EmeraldDark,
+                            modifier = Modifier.size(18.dp)
+                        )
                         Text(
-                            text = "REGIÃO DE OPERAÇÃO",
+                            text = "Admin SU: Acesso Livre Mestre",
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = Slate500,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 10.sp
+                                fontWeight = FontWeight.Bold,
+                                color = Slate900
                             )
                         )
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(BrandBlueBg)
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                    }
+
+                    // Test Sound Trigger
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Slate200)
+                            .clickable { onPlayTestSound() }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
+                            Icon(
+                                imageVector = Icons.Default.VolumeUp,
+                                contentDescription = null,
+                                tint = Slate700,
+                                modifier = Modifier.size(14.dp)
+                            )
                             Text(
-                                text = "Em Tempo Real",
+                                text = "Testar Som",
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = BrandBlue,
+                                    color = Slate700,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 10.sp
                                 )
-                            )
-                        }
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Slate200),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AltRoute,
-                                contentDescription = null,
-                                tint = Slate900,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-
-                        Column {
-                            Text(
-                                text = "Litoral & Região Metropolitana",
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = Slate900
-                                )
-                            )
-                            Text(
-                                text = "Santos, Guarujá, Bertioga, Litoral Norte e SP",
-                                style = MaterialTheme.typography.bodySmall.copy(color = Slate500)
                             )
                         }
                     }
@@ -595,7 +748,7 @@ fun LoginScreen(
 
                     Button(
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/5513999999999"))
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/5512988506597"))
                             context.startActivity(intent)
                         },
                         shape = RoundedCornerShape(10.dp),
@@ -612,10 +765,41 @@ fun LoginScreen(
                 }
             }
 
-            // Developer Credit Footer
+            // Developer Credit Footer (AlanSMSolutions.com)
             com.example.ui.components.DeveloperCreditFooter(isDarkTheme = false)
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+
+    // Modal Dialogs
+    if (showChangePasswordDialog && selectedDriver != null) {
+        val drv = selectedDriver!!
+        val cleanPhoneDigits = drv.phone.filter { it.isDigit() }
+        val defaultHint = if (cleanPhoneDigits.length >= 4) cleanPhoneDigits.takeLast(4) else "2026"
+
+        ChangePasswordDialog(
+            driver = drv,
+            defaultPinHint = defaultHint,
+            onDismiss = { showChangePasswordDialog = false },
+            onConfirmChange = { currentPin, newPin ->
+                val success = onChangePin(drv.id, currentPin, newPin)
+                if (success) {
+                    pinCode = newPin
+                }
+                success
+            }
+        )
+    }
+
+    if (showAddDriverDialog) {
+        AddDriverDialog(
+            onDismiss = { showAddDriverDialog = false },
+            onSaveDriver = { name, phone, vehicleModel, vehiclePlate, pixKey ->
+                val newDriver = onRegisterNewDriver(name, phone, vehicleModel, vehiclePlate, pixKey)
+                selectedDriver = newDriver
+                newDriver
+            }
+        )
     }
 }

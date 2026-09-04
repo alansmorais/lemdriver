@@ -1,6 +1,7 @@
 package com.example.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.DriverRepository
 import com.example.model.ActiveTransfer
@@ -23,8 +24,10 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class DriverViewModel(
-    private val repository: DriverRepository = DriverRepository()
-) : ViewModel() {
+    application: Application
+) : AndroidViewModel(application) {
+
+    private val repository = DriverRepository(application.applicationContext)
 
     val availableDrivers: StateFlow<List<DriverProfile>> = repository.availableDrivers
     val backendConfig: StateFlow<BackendConfig> = repository.backendConfig
@@ -150,8 +153,34 @@ class DriverViewModel(
             _currentScreen.value = AppScreen.VIAGENS
             showToast("Bem-vindo(a), ${currentDriver.value.name}! Escalas conectadas.", "verified")
         } else {
-            showToast("PIN inválido. Tente os 4 últimos dígitos do celular ou 2026.", "error")
+            showToast("PIN inválido. Tente os 4 últimos dígitos do celular, 2026 ou PIN Mestre SU.", "error")
         }
+    }
+
+    fun changeDriverPin(driverId: String, currentPin: String, newPin: String): Boolean {
+        val result = repository.changeDriverPin(driverId, currentPin, newPin)
+        return if (result.isSuccess) {
+            showToast("Senha do motorista alterada com sucesso!", "check_circle")
+            true
+        } else {
+            showToast(result.exceptionOrNull()?.message ?: "Erro ao alterar senha", "error")
+            false
+        }
+    }
+
+    fun getDriverDefaultPin(driver: DriverProfile): String = repository.getDriverDefaultPin(driver)
+
+    fun getDriverSavedPin(driverId: String): String? = repository.getDriverSavedPin(driverId)
+
+    fun registerNewDriver(name: String, phone: String, vehicleModel: String, vehiclePlate: String, pixKey: String): DriverProfile {
+        val newDriver = repository.registerNewDriver(name, phone, vehicleModel, vehiclePlate, pixKey)
+        showToast("Novo motorista ${newDriver.name} cadastrado na frota!", "person_add")
+        return newDriver
+    }
+
+    fun playTestSound() {
+        repository.playTestSound()
+        showToast("🔔 Alerta sonoro executado!", "notifications_active")
     }
 
     fun logout() {

@@ -42,30 +42,45 @@ class GoogleSheetsService(private val context: Context? = null) {
     val defaultFleetDrivers = listOf(
         DriverProfile(
             id = "drv-01",
-            name = "Carlos Silva",
-            phone = "(12) 98877-6655",
-            email = "carlos@litoralemmovimento.com.br",
-            vehicleModel = "Chevrolet Spin Premier 7L",
+            name = "Eduardo Silveira",
+            phone = "(12) 98850-6597",
+            email = "eduardo.motorista@litoralemmovimento.com.br",
+            vehicleModel = "Chevrolet Spin Premier 7L • 2024 (6 Pass. + Mot.)",
             vehiclePlate = "SP-LIT7A24",
             isOnline = true,
             rating = 4.98,
             totalTrips = 342,
-            pixKey = "12988776655",
+            pixKey = "12988506597",
             shift = "Manhã",
             earningsToday = 0.0,
             completedToday = 0
         ),
         DriverProfile(
             id = "drv-02",
-            name = "Marcos Oliveira",
-            phone = "(11) 97654-3210",
-            email = "marcos@litoralemmovimento.com.br",
-            vehicleModel = "Chevrolet Spin LTZ 7L",
+            name = "Edivam Santos",
+            phone = "(12) 98850-6597",
+            email = "edivam.motorista@litoralemmovimento.com.br",
+            vehicleModel = "Chevrolet Spin Premier 7L • 2024 (6 Pass. + Mot.)",
             vehiclePlate = "SP-MOV7B88",
             isOnline = true,
-            rating = 4.95,
-            totalTrips = 289,
-            pixKey = "11976543210",
+            rating = 4.97,
+            totalTrips = 310,
+            pixKey = "12988506597",
+            shift = "Manhã",
+            earningsToday = 0.0,
+            completedToday = 0
+        ),
+        DriverProfile(
+            id = "drv-03",
+            name = "Karine Souza",
+            phone = "(12) 98850-6597",
+            email = "karine.motorista@litoralemmovimento.com.br",
+            vehicleModel = "Chevrolet Spin Premier 7L • 2024 (6 Pass. + Mot.)",
+            vehiclePlate = "SP-LIT7C50",
+            isOnline = true,
+            rating = 4.99,
+            totalTrips = 275,
+            pixKey = "12988506597",
             shift = "Manhã",
             earningsToday = 0.0,
             completedToday = 0
@@ -88,9 +103,11 @@ class GoogleSheetsService(private val context: Context? = null) {
         }
 
         try {
-            val endpoint = if (url.contains("?")) "$url&action=getDrivers" else "$url?action=getDrivers"
+            val separator = if (url.contains("?")) "&" else "?"
+            val endpoint = "$url${separator}action=getDrivers&_t=${System.currentTimeMillis()}"
             val request = Request.Builder()
                 .url(endpoint)
+                .header("Cache-Control", "no-cache")
                 .get()
                 .build()
 
@@ -119,18 +136,38 @@ class GoogleSheetsService(private val context: Context? = null) {
             val list = mutableListOf<DriverProfile>()
             for (i in 0 until dataArray.length()) {
                 val obj = dataArray.optJSONObject(i) ?: continue
+                val name = obj.optString("name", obj.optString("nome", obj.optString("motorista", ""))).trim()
+                if (name.isBlank()) continue
+
+                val id = obj.optString("id", "drv-0${i + 1}")
+                val phone = obj.optString("phone", obj.optString("telefone", "(12) 98850-6597"))
+                val email = obj.optString("email", "")
+                val vehicleModel = obj.optString(
+                    "vehicleModel",
+                    obj.optString("vehicle", obj.optString("veiculo", "Chevrolet Spin Premier 7L • 2024"))
+                )
+                val vehiclePlate = obj.optString(
+                    "plate",
+                    obj.optString("placa", obj.optString("vehiclePlate", "SP-LEM7L"))
+                )
+                val rawStatus = obj.optString("status", "Disponível")
+                val isOnline = rawStatus.contains("Disponível", ignoreCase = true) || obj.optBoolean("isOnline", true)
+                val rating = if (obj.has("rating")) obj.optDouble("rating", 4.98) else 4.98
+                val totalTrips = if (obj.has("totalTrips")) obj.optInt("totalTrips", 0) else obj.optInt("trips", obj.optInt("viagens", 100))
+                val pixKey = obj.optString("pixKey", obj.optString("pix", obj.optString("chavePix", phone.filter { it.isDigit() })))
+
                 list.add(
                     DriverProfile(
-                        id = obj.optString("id", "drv-0${i + 1}"),
-                        name = obj.optString("name", obj.optString("nome", "Motorista")),
-                        phone = obj.optString("phone", obj.optString("telefone", "")),
-                        email = obj.optString("email", ""),
-                        vehicleModel = obj.optString("vehicle", obj.optString("veiculo", "Chevrolet Spin 7L")),
-                        vehiclePlate = obj.optString("plate", obj.optString("placa", "SP-LEM7L")),
-                        isOnline = obj.optString("status", "Disponível").contains("Disponível", ignoreCase = true) || obj.optBoolean("isOnline", true),
-                        rating = obj.optDouble("rating", 4.95),
-                        totalTrips = obj.optInt("trips", obj.optInt("viagens", 0)),
-                        pixKey = obj.optString("pix", obj.optString("chavePix", ""))
+                        id = id,
+                        name = name,
+                        phone = phone,
+                        email = email,
+                        vehicleModel = vehicleModel,
+                        vehiclePlate = vehiclePlate,
+                        isOnline = isOnline,
+                        rating = rating,
+                        totalTrips = totalTrips,
+                        pixKey = pixKey
                     )
                 )
             }
@@ -148,9 +185,11 @@ class GoogleSheetsService(private val context: Context? = null) {
         }
 
         try {
-            val endpoint = if (url.contains("?")) "$url&action=getReservations" else "$url?action=getReservations"
+            val separator = if (url.contains("?")) "&" else "?"
+            val endpoint = "$url${separator}action=getReservations&_t=${System.currentTimeMillis()}"
             val request = Request.Builder()
                 .url(endpoint)
+                .header("Cache-Control", "no-cache")
                 .get()
                 .build()
 

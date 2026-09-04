@@ -20,18 +20,25 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +47,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.DriverProfile
+import com.example.ui.theme.AmberDeep
+import com.example.ui.theme.BrandBlue
 import com.example.ui.theme.DestRedBg
 import com.example.ui.theme.DestRedText
 import com.example.ui.theme.EmeraldDark
@@ -61,8 +70,12 @@ fun PerfilScreen(
     driver: DriverProfile,
     onToggleOnline: () -> Unit,
     onLogout: () -> Unit,
+    onChangePin: (driverId: String, currentPin: String, newPin: String) -> Boolean = { _, _, _ -> true },
+    onPlayTestSound: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -293,6 +306,50 @@ fun PerfilScreen(
             }
         }
 
+        // Configurações de Segurança & Alertas
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            color = SurfaceWhite,
+            shadowElevation = 1.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    text = "SEGURANÇA & NOTIFICAÇÕES",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = Slate500,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 10.sp
+                    )
+                )
+
+                // Alterar Senha
+                OutlinedButton(
+                    onClick = { showChangePasswordDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.Key, contentDescription = null, tint = BrandBlue, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Alterar Senha de Acesso (PIN)", color = Slate900, fontWeight = FontWeight.Bold)
+                }
+
+                // Testar Som
+                OutlinedButton(
+                    onClick = onPlayTestSound,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.VolumeUp, contentDescription = null, tint = EmeraldDark, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Testar Alerta Sonoro de Reservas", color = Slate900, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
         // Logout Action
         Button(
             onClick = onLogout,
@@ -324,5 +381,18 @@ fun PerfilScreen(
         com.example.ui.components.DeveloperCreditFooter(isDarkTheme = false)
 
         Spacer(modifier = Modifier.height(70.dp))
+    }
+
+    if (showChangePasswordDialog) {
+        val cleanPhoneDigits = driver.phone.filter { it.isDigit() }
+        val defaultHint = if (cleanPhoneDigits.length >= 4) cleanPhoneDigits.takeLast(4) else "2026"
+        com.example.ui.components.ChangePasswordDialog(
+            driver = driver,
+            defaultPinHint = defaultHint,
+            onDismiss = { showChangePasswordDialog = false },
+            onConfirmChange = { currentPin, newPin ->
+                onChangePin(driver.id, currentPin, newPin)
+            }
+        )
     }
 }
