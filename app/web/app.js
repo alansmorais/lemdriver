@@ -161,6 +161,46 @@ function loadDefaultDrivers() {
         }
     ];
     appState.currentDriver = appState.drivers[0];
+    appState.trips = [
+        {
+            id: "res-01",
+            code: "#LEM-2026-01",
+            passengerName: "Carlos Eduardo Silva",
+            passengerPhone: "12988506597",
+            origin: { title: "Aeroporto de Congonhas (CGH)", subtitle: "São Paulo - SP" },
+            destination: { title: "Riviera de São Lourenço", subtitle: "Bertióga - SP" },
+            totalPrice: 480.00,
+            paymentMethod: "PIX Direto",
+            timeLabel: "14:30",
+            date: "Hoje",
+            passengersCount: 3,
+            luggageInfo: "3 malas grandes",
+            flightNumber: "Voo LA-3120",
+            status: "CONFIRMADO",
+            assignedDriverName: "Eduardo Silveira",
+            isAssignedToMe: true,
+            isAvailableToClaim: false
+        },
+        {
+            id: "res-02",
+            code: "#LEM-2026-02",
+            passengerName: "Beatriz Lima",
+            passengerPhone: "12988601234",
+            origin: { title: "São Sebastião (Porto)", subtitle: "São Sebastião - SP" },
+            destination: { title: "Aeroporto de Guarulhos (GRU)", subtitle: "Guarulhos - SP" },
+            totalPrice: 520.00,
+            paymentMethod: "Faturado Empresa",
+            timeLabel: "18:00",
+            date: "Hoje",
+            passengersCount: 2,
+            luggageInfo: "2 malas",
+            flightNumber: "Voo G3-1490",
+            status: "DISPONIVEL",
+            assignedDriverName: "",
+            isAssignedToMe: false,
+            isAvailableToClaim: true
+        }
+    ];
 }
 
 async function syncWithBackend(silent = false) {
