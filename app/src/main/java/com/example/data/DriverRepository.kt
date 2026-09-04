@@ -114,10 +114,10 @@ class DriverRepository(context: Context? = null) {
                 )
             }
             _trips.value = mapped
-            _lastSyncTime.value = "Sincronizado às " + java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(java.util.Date())
+            _lastSyncTime.value = "Sincronizado às " + java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
             return Result.success(mapped.size)
         } else {
-            _lastSyncTime.value = "Conexão ativa (dados locais)"
+            _lastSyncTime.value = "Conexão ativa • " + java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
             return Result.failure(reservationsResult.exceptionOrNull() ?: Exception("Falha ao sincronizar"))
         }
     }

@@ -386,7 +386,7 @@ fun ViagensScreen(
                             )
 
                             Text(
-                                text = "Não há viagens cadastradas nesta categoria. Conecte sua planilha ou aguarde despachos da central.",
+                                text = "Não há viagens cadastradas nesta categoria. Conecte ao servidor live ou aguarde despachos da central.",
                                 style = MaterialTheme.typography.bodySmall.copy(color = Slate500),
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
@@ -408,7 +408,7 @@ fun ViagensScreen(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = if (isSyncing) "Sincronizando..." else "Sincronizar Planilha",
+                                    text = if (isSyncing) "Sincronizando..." else "Sincronizar Servidor",
                                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
                                 )
                             }
@@ -434,6 +434,7 @@ fun ViagensScreen(
             }
 
             item {
+                com.example.ui.components.DeveloperCreditFooter(isDarkTheme = false)
                 Spacer(modifier = Modifier.height(20.dp))
             }
         }

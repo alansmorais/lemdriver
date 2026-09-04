@@ -12,12 +12,14 @@ import com.example.model.EarningsSummary
 import com.example.model.FleetNotification
 import com.example.model.TripCategory
 import com.example.model.TripItem
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class DriverViewModel(
@@ -76,9 +78,19 @@ class DriverViewModel(
     val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
 
     init {
-        // Automatically sync on launch
+        // Automatically sync on launch and every 60 seconds
         viewModelScope.launch {
-            repository.syncWithGoogleSheets()
+            while (isActive) {
+                try {
+                    _isSyncing.value = true
+                    repository.syncWithGoogleSheets()
+                } catch (e: Exception) {
+                    // Safe handling for background sync
+                } finally {
+                    _isSyncing.value = false
+                }
+                delay(60_000L) // Sincronização automática a cada 60 segundos
+            }
         }
     }
 

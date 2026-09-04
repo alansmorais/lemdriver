@@ -1,0 +1,147 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Soft Cream / Off-White circular badge background -->
+    <path
+        android:fillColor="#FDFBF7"
+        android:pathData="M60,4 C29.07,4 4,29.07 4,60 C4,90.93 29.07,116 60,116 C90.93,116 116,90.93 116,60 C116,29.07 90.93,4 60,4 Z" />
+
+    <!-- Golden Sun Arch over top right -->
+    <path
+        android:pathData="M16,74 C16,42 38,12 76,14 C89,15 101,24 105,38 C99,28 88,21 76,21 C44,21 24,46 24,74 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="16"
+                android:startY="14"
+                android:endX="105"
+                android:endY="38"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#0F172A" />
+                <item android:offset="0.4" android:color="#C59B27" />
+                <item android:offset="1.0" android:color="#E5C158" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Flying Seabirds -->
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M64,32 C66,30 68,29 70,30 C72,29 74,30 76,32 C74,33 72,32 70,33 C68,32 66,33 64,32 Z" />
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M84,40 C87,38 89,37 92,38 C94,37 97,38 99,40 C97,41 95,40 92,42 C90,40 87,41 84,40 Z" />
+
+    <!-- Palm Tree on Left -->
+    <!-- Trunk -->
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M24,76 C26,62 31,52 38,42 C39,42 40,43 39,44 C33,54 28,64 26,76 Z" />
+    <!-- Fronds -->
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M38,42 C33,37 25,37 19,41 C24,42 30,44 38,42 Z" />
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M38,42 C32,32 23,28 17,29 C21,33 28,38 38,42 Z" />
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M38,42 C37,31 32,23 29,22 C32,28 36,36 38,42 Z" />
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M38,42 C44,32 49,27 52,27 C48,32 44,38 38,42 Z" />
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M38,42 C46,37 53,39 56,43 C50,43 44,43 38,42 Z" />
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M38,42 C44,45 48,51 51,56 C46,51 42,47 38,42 Z" />
+
+    <!-- Curved Coastal Road -->
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M6,80 C18,72 32,70 54,74 C78,78 96,88 114,94 C96,96 74,90 52,84 C30,78 16,84 6,80 Z" />
+
+    <!-- Ocean Blue Wave Swirls underneath -->
+    <path
+        android:pathData="M8,88 C24,80 44,82 66,88 C88,94 104,104 116,108 C100,108 82,100 62,94 C42,88 22,90 8,88 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="8"
+                android:startY="88"
+                android:endX="116"
+                android:endY="108"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#0077B6" />
+                <item android:offset="1.0" android:color="#023E8A" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:pathData="M18,97 C36,92 56,95 78,101 C94,105 106,112 112,114 C98,114 84,108 68,103 C50,98 32,98 18,97 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="18"
+                android:startY="97"
+                android:endX="112"
+                android:endY="114"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#0096C7" />
+                <item android:offset="1.0" android:color="#0077B6" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Chevrolet Spin Minivan Body (Dark Executive Navy #0F172A) -->
+    <!-- Main chassis silhouette -->
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M38,68 C38,62 44,56 56,53 L74,52 C84,52 92,56 96,62 L99,69 C100,72 99,78 97,80 L92,80 C91,85 86,88 81,88 C76,88 71,85 70,80 L50,80 C49,85 44,88 39,88 C34,88 29,85 28,80 L25,80 C23,80 22,76 23,73 L26,67 C28,64 33,68 38,68 Z" />
+
+    <!-- Roof Rails -->
+    <path
+        android:fillColor="#C59B27"
+        android:pathData="M56,50 L76,49 C78,49 80,50 80,51 L56,52 Z" />
+
+    <!-- Windshield & Windows -->
+    <path
+        android:fillColor="#F8FAFC"
+        android:pathData="M53,55 L65,54 C66,54 67,55 67,56 L66,63 C66,64 65,65 64,65 L50,65 C49,65 48,64 49,63 Z" />
+    <path
+        android:fillColor="#F8FAFC"
+        android:pathData="M69,54 L80,54 C82,54 84,56 85,58 L86,63 C86,64 85,65 84,65 L70,65 C69,65 68,64 68,63 Z" />
+
+    <!-- Chrome Grille & Headlight Accents -->
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M24,71 L32,71 C34,71 34,73 32,74 L25,74 C24,74 23,73 24,71 Z" />
+    <path
+        android:fillColor="#FBBF24"
+        android:pathData="M27,68 L32,67 C33,67 34,68 33,69 L28,70 C27,70 26,69 27,68 Z" />
+
+    <!-- Front Wheel (Alloy rims) -->
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M39,76 C42.3,76 45,78.7 45,82 C45,85.3 42.3,88 39,88 C35.7,88 33,85.3 33,82 C33,78.7 35.7,76 39,76 Z" />
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M39,78 C41.2,78 43,79.8 43,82 C43,84.2 41.2,86 39,86 C36.8,86 35,84.2 35,82 C35,79.8 36.8,78 39,78 Z" />
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M39,80 C40.1,80 41,80.9 41,82 C41,83.1 40.1,84 39,84 C37.9,84 37,83.1 37,82 C37,80.9 37.9,80 39,80 Z" />
+
+    <!-- Rear Wheel (Alloy rims) -->
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M81,76 C84.3,76 87,78.7 87,82 C87,85.3 84.3,88 81,88 C77.7,88 75,85.3 75,82 C75,78.7 77.7,76 81,76 Z" />
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M81,78 C83.2,78 85,79.8 85,82 C85,84.2 83.2,86 81,86 C78.8,86 77,84.2 77,82 C77,79.8 78.8,78 81,78 Z" />
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M81,80 C82.1,80 83,80.9 83,82 C83,83.1 82.1,84 81,84 C79.9,84 79,83.1 79,82 C79,80.9 79.9,80 81,80 Z" />
+
+</vector>

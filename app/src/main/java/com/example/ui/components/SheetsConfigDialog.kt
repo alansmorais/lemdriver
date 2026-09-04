@@ -225,6 +225,9 @@ fun SheetsConfigDialog(
                         style = MaterialTheme.typography.labelMedium.copy(color = Slate900)
                     )
                 }
+
+                // Developer Credit
+                DeveloperCreditFooter(isDarkTheme = false)
             }
         },
         confirmButton = {

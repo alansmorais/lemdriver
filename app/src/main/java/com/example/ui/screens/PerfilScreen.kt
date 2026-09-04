@@ -311,6 +311,18 @@ fun PerfilScreen(
             Text("Trocar de Motorista / Encerrar Turno", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Brand Emblem Card
+        com.example.ui.components.LemBrandLogo(
+            size = 64.dp,
+            showTypography = true,
+            isDarkTheme = false
+        )
+
+        // Developer Credit Footer
+        com.example.ui.components.DeveloperCreditFooter(isDarkTheme = false)
+
         Spacer(modifier = Modifier.height(70.dp))
     }
 }

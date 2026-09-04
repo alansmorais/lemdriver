@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -124,6 +125,7 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -190,56 +192,38 @@ fun LoginScreen(
                 }
             }
 
-            // Executive Transport Banner (Dark Card)
+            // Executive Transport Banner (Dark Card with Official LEM Logo)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(18.dp))
                     .background(PrimaryContainer)
-                    .padding(16.dp)
+                    .padding(20.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    com.example.ui.components.LemBrandLogo(
+                        size = 84.dp,
+                        showTypography = true,
+                        isDarkTheme = true
+                    )
+
                     Box(
                         modifier = Modifier
-                            .size(52.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(SurfaceWhite.copy(alpha = 0.12f)),
-                        contentAlignment = Alignment.Center
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(SurfaceWhite.copy(alpha = 0.10f))
+                            .padding(horizontal = 12.dp, vertical = 4.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.DirectionsCar,
-                            contentDescription = "Logo",
-                            tint = AmberHighlight,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-
-                    Column {
                         Text(
-                            text = "EXECUTIVE TRANSPORT",
+                            text = "PORTAL DO MOTORISTA • DESPACHO LIVE",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = AmberHighlight,
-                                fontWeight = FontWeight.ExtraBold,
-                                letterSpacing = 1.sp,
-                                fontSize = 11.sp
-                            )
-                        )
-                        Text(
-                            text = "Portal do Motorista",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                color = SurfaceWhite,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
-                            )
-                        )
-                        Text(
-                            text = "Escala & Despacho Operacional",
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = Slate300,
-                                fontSize = 12.sp
+                                letterSpacing = 0.8.sp,
+                                fontSize = 10.sp
                             )
                         )
                     }
@@ -627,6 +611,9 @@ fun LoginScreen(
                     }
                 }
             }
+
+            // Developer Credit Footer
+            com.example.ui.components.DeveloperCreditFooter(isDarkTheme = false)
 
             Spacer(modifier = Modifier.height(20.dp))
         }
