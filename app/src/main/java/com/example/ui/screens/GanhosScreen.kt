@@ -30,13 +30,10 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Receipt
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.TrendingUp
-import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -45,18 +42,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.example.model.CompletedTrip
 import com.example.model.DriverProfile
 import com.example.model.EarningsSummary
-import com.example.ui.theme.AmberDeep
 import com.example.ui.theme.AmberHighlight
 import com.example.ui.theme.AmberVibrant
 import com.example.ui.theme.BrandBlue
@@ -70,12 +63,10 @@ import com.example.ui.theme.PrimaryContainer
 import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate200
 import com.example.ui.theme.Slate300
-import com.example.ui.theme.Slate400
 import com.example.ui.theme.Slate500
 import com.example.ui.theme.Slate700
 import com.example.ui.theme.Slate900
 import com.example.ui.theme.SlateBg
-import com.example.ui.theme.SurfaceContainerHigh
 import com.example.ui.theme.SurfaceWhite
 
 @Composable
@@ -99,38 +90,41 @@ fun GanhosScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         item {
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+        }
 
-            // Timeframe Segmented Switcher
+        // Timeframe Selector Pills (Hoje / Semanal)
+        item {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                color = SurfaceContainerHigh.copy(alpha = 0.7f)
+                shape = RoundedCornerShape(12.dp),
+                color = Slate100
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    val periods = listOf("Semanal", "Quinzenal", "Mensal")
-                    periods.forEach { period ->
+                    val timeframes = listOf("Hoje", "Semanal", "Mensal")
+                    timeframes.forEach { period ->
                         val isSelected = selectedTimeframe == period
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .clip(RoundedCornerShape(10.dp))
+                                .clip(RoundedCornerShape(8.dp))
                                 .background(if (isSelected) SurfaceWhite else Color.Transparent)
                                 .clickable { onSelectTimeframe(period) }
                                 .padding(vertical = 8.dp)
-                                .testTag("timeframe_$period"),
+                                .testTag("timeframe_btn_$period"),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = period,
-                                style = MaterialTheme.typography.labelMedium.copy(
+                                style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSelected) Slate900 else Slate500
+                                    color = if (isSelected) Slate900 else Slate500,
+                                    fontSize = 12.sp
                                 )
                             )
                         }
@@ -139,19 +133,16 @@ fun GanhosScreen(
             }
         }
 
-        // Hero Financial Card (Dark Theme)
+        // Main Earnings Card (Values derived from sheets)
         item {
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("hero_earnings_card"),
-                shape = RoundedCornerShape(18.dp),
-                color = PrimaryContainer,
-                shadowElevation = 2.dp
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = PrimaryContainer
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -159,219 +150,232 @@ fun GanhosScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "TOTAL LÍQUIDO (${selectedTimeframe.uppercase()})",
+                            text = "FATURAMENTO TOTAL ACUMULADO",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = AmberHighlight,
                                 fontWeight = FontWeight.ExtraBold,
-                                letterSpacing = 0.8.sp,
-                                fontSize = 10.sp
+                                letterSpacing = 0.5.sp,
+                                fontSize = 11.sp
                             )
                         )
                         Box(
                             modifier = Modifier
                                 .clip(CircleShape)
-                                .background(EmeraldDark.copy(alpha = 0.3f))
+                                .background(SurfaceWhite.copy(alpha = 0.15f))
                                 .padding(horizontal = 8.dp, vertical = 2.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(3.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.TrendingUp,
-                                    contentDescription = null,
-                                    tint = EmeraldVibrant,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Text(
-                                    text = "+18% vs anterior",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        color = EmeraldVibrant,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 10.sp
-                                    )
-                                )
-                            }
-                        }
-                    }
-
-                    Text(
-                        text = "R$ ${String.format("%.2f", earnings.weeklyTotal)}",
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            color = SurfaceWhite,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 32.sp
-                        )
-                    )
-
-                    // Goal Progress
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
                             Text(
-                                text = "${earnings.tripsCompletedWeekly} viagens realizadas",
-                                style = MaterialTheme.typography.bodySmall.copy(color = Slate300, fontSize = 11.sp)
-                            )
-                            Text(
-                                text = "Meta: ${earnings.goalPercentage}%",
+                                text = "Base Planilha",
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = AmberHighlight,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 11.sp
-                                )
-                            )
-                        }
-
-                        LinearProgressIndicator(
-                            progress = { earnings.goalPercentage / 100f },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(6.dp)
-                                .clip(RoundedCornerShape(3.dp)),
-                            color = AmberVibrant,
-                            trackColor = Slate700,
-                            strokeCap = StrokeCap.Round
-                        )
-                    }
-
-                    // Secondary Payout Breakdown Row
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Slate900.copy(alpha = 0.6f))
-                            .padding(10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text(
-                                text = "RECEBIDO NO LOCAL",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = Slate400,
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.ExtraBold
-                                )
-                            )
-                            Text(
-                                text = "R$ ${String.format("%.2f", earnings.receivedOnSite)}",
-                                style = MaterialTheme.typography.titleMedium.copy(
                                     color = SurfaceWhite,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
-                                ),
-                                modifier = Modifier.padding(top = 1.dp)
-                            )
-                        }
-
-                        Box(modifier = Modifier.width(1.dp).height(24.dp).background(Slate700))
-
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text(
-                                text = "ACERTO FROTA",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = Slate400,
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.ExtraBold
-                                )
-                            )
-                            Text(
-                                text = "R$ ${String.format("%.2f", earnings.fleetSettlement)}",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    color = AmberHighlight,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
-                                ),
-                                modifier = Modifier.padding(top = 1.dp)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Driver Spotlight Card
-        item {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
-                color = SurfaceWhite,
-                shadowElevation = 1.dp
-            ) {
-                Row(
-                    modifier = Modifier.padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(54.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Slate100)
-                    ) {
-                        AsyncImage(
-                            model = driver.avatarUrl,
-                            contentDescription = "Foto ${driver.name}",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = driver.name,
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = Slate900
-                                )
-                            )
-                            Icon(
-                                imageVector = Icons.Default.Verified,
-                                contentDescription = null,
-                                tint = AmberVibrant,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-
-                        Text(
-                            text = "${driver.vehicleModel} • ${driver.vehiclePlate}",
-                            style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 11.sp)
-                        )
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier.padding(top = 2.dp)
-                        ) {
-                            Icon(imageVector = Icons.Default.Star, contentDescription = null, tint = AmberVibrant, modifier = Modifier.size(14.dp))
-                            Text(
-                                text = "${String.format("%.2f", driver.rating)} (${driver.completedTripsCount} corridas)",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = Slate700,
+                                    fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             )
                         }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(AmberHighlight.copy(alpha = 0.25f))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    val displayTotal = when (selectedTimeframe) {
+                        "Hoje" -> earnings.todayTotal
+                        "Mensal" -> earnings.weeklyTotal * 4.2
+                        else -> earnings.weeklyTotal
+                    }
+
+                    val displayTripsCount = when (selectedTimeframe) {
+                        "Hoje" -> earnings.todayCompletedCount
+                        "Mensal" -> earnings.tripsCompletedWeekly * 4
+                        else -> earnings.tripsCompletedWeekly
+                    }
+
+                    Text(
+                        text = "R$ ${String.format("%.2f", displayTotal)}",
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            color = SurfaceWhite,
+                            fontSize = 32.sp
+                        )
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
+                        // Total Trips Box
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(SurfaceWhite.copy(alpha = 0.1f))
+                                .padding(10.dp)
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Viagens Concluídas",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = Slate300,
+                                        fontSize = 11.sp
+                                    )
+                                )
+                                Text(
+                                    text = "$displayTripsCount corridas",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        color = SurfaceWhite,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                        }
+
+                        // Average Fare Box
+                        val avgFare = if (displayTripsCount > 0) displayTotal / displayTripsCount else 0.0
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(SurfaceWhite.copy(alpha = 0.1f))
+                                .padding(10.dp)
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Média por Viagem",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = Slate300,
+                                        fontSize = 11.sp
+                                    )
+                                )
+                                Text(
+                                    text = "R$ ${String.format("%.2f", avgFare)}",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        color = SurfaceWhite,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Breakdown by Payment Category (Recebido no Local vs. Faturado Frota)
+        item {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = SurfaceWhite,
+                shadowElevation = 2.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "DETALHAMENTO DE RECEBIMENTOS",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = Slate500,
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = 0.5.sp
+                        )
+                    )
+
+                    // Recebido Direto
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(EmeraldLightBg)
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(EmeraldOriginBg),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Payments,
+                                    contentDescription = null,
+                                    tint = EmeraldOriginText,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Recebido no Local (PIX / Dinheiro)",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Slate900
+                                    )
+                                )
+                                Text(
+                                    text = "Pago diretamente pelo passageiro",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 11.sp)
+                                )
+                            }
+                        }
                         Text(
-                            text = "Destaque",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                color = AmberDeep,
+                            text = "R$ ${String.format("%.2f", earnings.receivedOnSite)}",
+                            style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 10.sp
+                                color = EmeraldDark
+                            )
+                        )
+                    }
+
+                    // Faturado Central
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(BrandBlueBg)
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(BrandBlue.copy(alpha = 0.15f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Receipt,
+                                    contentDescription = null,
+                                    tint = BrandBlue,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Faturado Central (Repasse Frota)",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Slate900
+                                    )
+                                )
+                                Text(
+                                    text = "Repasse programado em conta PIX",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 11.sp)
+                                )
+                            }
+                        }
+                        Text(
+                            text = "R$ ${String.format("%.2f", earnings.fleetSettlement)}",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = BrandBlue
                             )
                         )
                     }
@@ -379,17 +383,88 @@ fun GanhosScreen(
             }
         }
 
-        // Histórico Recente Section
+        // PIX Registered Key Card
+        item {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = SurfaceWhite,
+                shadowElevation = 2.dp
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Slate100),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.QrCode,
+                                contentDescription = null,
+                                tint = Slate900,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = "Chave PIX Cadastrada",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = Slate500,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                            Text(
+                                text = if (driver.pixKey.isNotBlank()) driver.pixKey else "Não configurada",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (driver.pixKey.isNotBlank()) Slate900 else Slate500
+                                )
+                            )
+                        }
+                    }
+
+                    if (driver.pixKey.isNotBlank()) {
+                        Button(
+                            onClick = {
+                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                val clip = ClipData.newPlainText("Chave PIX", driver.pixKey)
+                                clipboard.setPrimaryClip(clip)
+                                onShowToast("Chave PIX copiada!")
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Slate100,
+                                contentColor = Slate900
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(34.dp)
+                        ) {
+                            Icon(imageVector = Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Copiar", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                        }
+                    }
+                }
+            }
+        }
+
+        // Spreadsheet Completed Trips History Title
         item {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "HISTÓRICO RECENTE",
+                    text = "HISTÓRICO DE CORRIDAS (PLANILHA)",
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = Slate500,
                         fontWeight = FontWeight.ExtraBold,
@@ -397,226 +472,150 @@ fun GanhosScreen(
                     )
                 )
                 Text(
-                    text = "Ver Todos",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        color = BrandBlue,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    modifier = Modifier.clickable { onShowToast("Histórico completo disponível na planilha.") }
+                    text = "${completedTrips.size} registros",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = Slate500,
+                        fontSize = 11.sp
+                    )
                 )
             }
         }
 
-        items(completedTrips, key = { it.id }) { trip ->
-            CompletedTripItem(trip = trip)
-        }
-
-        // PIX Key & Settlement Info
-        item {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                color = SurfaceWhite,
-                shadowElevation = 1.dp
-            ) {
-                Column(
-                    modifier = Modifier.padding(14.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+        // List of Completed Trips from Sheet
+        if (completedTrips.isEmpty()) {
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = SurfaceWhite
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = "Nenhuma corrida concluída registrada",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Slate900
+                                )
+                            )
+                            Text(
+                                text = "Ao finalizar viagens em andamento, o comprovante e valor aparecerão nesta listagem.",
+                                style = MaterialTheme.typography.bodySmall.copy(color = Slate500),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            items(completedTrips, key = { it.id }) { trip ->
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = SurfaceWhite,
+                    shadowElevation = 1.dp
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Icon(imageVector = Icons.Default.QrCode, contentDescription = null, tint = EmeraldDark, modifier = Modifier.size(18.dp))
-                            Text(
-                                text = "CHAVE PIX CADASTRADA",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = Slate500,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 10.sp
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Slate100),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.DirectionsCar,
+                                    contentDescription = null,
+                                    tint = Slate700,
+                                    modifier = Modifier.size(18.dp)
                                 )
-                            )
+                            }
+
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = trip.id,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = Slate900,
+                                            fontWeight = FontWeight.ExtraBold
+                                        )
+                                    )
+                                    Text(
+                                        text = "• ${trip.timeLabel}",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = Slate500,
+                                            fontSize = 11.sp
+                                        )
+                                    )
+                                }
+                                Text(
+                                    text = trip.passengerName,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Slate900
+                                    )
+                                )
+                                Text(
+                                    text = "${trip.origin} → ${trip.destination}",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = Slate500,
+                                        fontSize = 11.sp
+                                    ),
+                                    maxLines = 1
+                                )
+                            }
                         }
 
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(Slate100)
-                                .clickable {
-                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    clipboard.setPrimaryClip(ClipData.newPlainText("PIX", driver.pixKey))
-                                    onShowToast("Chave PIX copiada!")
-                                }
-                                .padding(horizontal = 8.dp, vertical = 3.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = "R$ ${String.format("%.2f", trip.fareAmount)}",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = EmeraldDark
+                                )
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(EmeraldLightBg)
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
-                                Icon(imageVector = Icons.Default.ContentCopy, contentDescription = null, tint = Slate700, modifier = Modifier.size(12.dp))
                                 Text(
-                                    text = "Copiar",
+                                    text = trip.paymentMethod,
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        color = Slate700,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 10.sp
+                                        color = EmeraldDark,
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold
                                     )
                                 )
                             }
                         }
                     }
-
-                    Text(
-                        text = driver.pixKey,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = Slate900,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-
-                    Text(
-                        text = "Os repasses das corridas faturadas pela frota ocorrem todas as terças-feiras.",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = Slate500,
-                            fontSize = 11.sp
-                        )
-                    )
                 }
-            }
-        }
-
-        // WhatsApp Suporte Financeiro
-        item {
-            Button(
-                onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/5513999999999"))
-                    context.startActivity(intent)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .testTag("btn_financial_support"),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = EmeraldLightBg,
-                    contentColor = EmeraldDark
-                )
-            ) {
-                Icon(imageVector = Icons.Default.Chat, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("Central de Repasses & Financeiro", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
             }
         }
 
         item {
-            Spacer(modifier = Modifier.height(70.dp))
-        }
-    }
-}
-
-@Composable
-fun CompletedTripItem(
-    trip: CompletedTrip,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("completed_trip_${trip.id}"),
-        shape = RoundedCornerShape(16.dp),
-        color = SurfaceWhite,
-        shadowElevation = 1.dp
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.weight(1f)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(EmeraldLightBg),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Receipt,
-                        contentDescription = null,
-                        tint = EmeraldDark,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                Column {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = trip.passengerName,
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Slate900
-                            ),
-                            maxLines = 1
-                        )
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(EmeraldOriginBg)
-                                .padding(horizontal = 6.dp, vertical = 1.dp)
-                        ) {
-                            Text(
-                                text = trip.statusText,
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = EmeraldOriginText,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 9.sp
-                                )
-                            )
-                        }
-                    }
-
-                    Text(
-                        text = "${trip.origin} → ${trip.destination}",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = Slate500,
-                            fontSize = 11.sp
-                        ),
-                        maxLines = 1,
-                        modifier = Modifier.padding(top = 1.dp)
-                    )
-
-                    Text(
-                        text = trip.timeLabel,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = Slate400,
-                            fontSize = 10.sp
-                        )
-                    )
-                }
-            }
-
-            Text(
-                text = "R$ ${String.format("%.2f", trip.fareAmount)}",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    color = EmeraldDark
-                ),
-                modifier = Modifier.padding(start = 8.dp)
-            )
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }

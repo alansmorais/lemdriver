@@ -13,15 +13,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Icon
@@ -35,20 +33,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.example.model.AppScreen
 import com.example.model.DriverProfile
+import com.example.ui.theme.AmberHighlight
 import com.example.ui.theme.EmeraldDark
-import com.example.ui.theme.EmeraldLightBg
 import com.example.ui.theme.EmeraldOriginBg
 import com.example.ui.theme.EmeraldOriginText
 import com.example.ui.theme.EmeraldVibrant
+import com.example.ui.theme.PrimaryContainer
 import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate300
 import com.example.ui.theme.Slate500
@@ -59,7 +55,7 @@ import com.example.ui.theme.SurfaceWhite
 fun AppHeader(
     currentScreen: AppScreen,
     driver: DriverProfile,
-    unreadNotificationsCount: Int = 3,
+    unreadNotificationsCount: Int = 2,
     onNotificationClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -95,20 +91,19 @@ fun AppHeader(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.weight(1f, fill = false)
             ) {
-                // Litoral em Movimento Brand Logo
+                // Litoral em Movimento Brand Vector Badge
                 Box(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Slate100)
-                        .padding(2.dp),
+                        .background(PrimaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    AsyncImage(
-                        model = "https://lh3.googleusercontent.com/aida-public/AB6AXuB-ElUdIhbcpsnPN-6RbU9Nomz07Zli9GjCcOMiFqltIKE9PSDYy9ngI9KmDKcAuexz1L7cklLI6MnDuuxcj541MrN3iUO_L46nqOlNc2PRU0y6_k5FuEp4YHgKVilXZslVyoHGpKfuu_lD0cz8c5yGoKtZfK4zrSKzmePsmL9DEXgakGXJ8pdcpgKN3QOFoaT5-IBpas_NwmSEaN4xvxU6ZvZhkGMPbOXKykU1heGzD6Fn0scvI8gj",
-                        contentDescription = "Litoral em Movimento Logo",
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxWidth()
+                    Icon(
+                        imageVector = Icons.Default.DirectionsCar,
+                        contentDescription = "Litoral em Movimento",
+                        tint = AmberHighlight,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
 
@@ -147,7 +142,7 @@ fun AppHeader(
                         }
                     }
 
-                    // Online pill & Sheets sync status
+                    // Online status & Sheets sync indicator
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -180,7 +175,7 @@ fun AppHeader(
                                 modifier = Modifier.size(11.dp)
                             )
                             Text(
-                                text = "Sheets Sync",
+                                text = "Sheets",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Medium,
@@ -192,7 +187,7 @@ fun AppHeader(
                 }
             }
 
-            // Right Actions: Notification Bell & Driver Profile Avatar
+            // Right Actions: Notification Bell & Driver Profile Initials Avatar
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -226,20 +221,24 @@ fun AppHeader(
                     }
                 }
 
-                // Profile Avatar with online badge
+                // Profile Initials Avatar
                 Box(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
+                        .background(PrimaryContainer)
                         .border(1.5.dp, if (driver.isOnline) EmeraldVibrant else Slate300, CircleShape)
                         .clickable(onClick = onProfileClick)
-                        .testTag("profile_avatar_button")
+                        .testTag("profile_avatar_button"),
+                    contentAlignment = Alignment.Center
                 ) {
-                    AsyncImage(
-                        model = driver.avatarUrl,
-                        contentDescription = "Perfil ${driver.name}",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxWidth()
+                    Text(
+                        text = driver.initials,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = SurfaceWhite,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
                     )
                 }
             }

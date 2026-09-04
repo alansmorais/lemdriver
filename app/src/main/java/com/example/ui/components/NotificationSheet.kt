@@ -114,65 +114,106 @@ fun NotificationSheet(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                notifications.forEach { item ->
-                    val icon = when (item.iconName) {
-                        "bolt" -> Icons.Default.Bolt
-                        "cloud_done" -> Icons.Default.CloudDone
-                        "traffic" -> Icons.Default.Traffic
-                        else -> Icons.Default.Notifications
-                    }
-                    val iconTint = if (item.isUrgent) AmberVibrant else EmeraldDark
-                    val iconBg = if (item.isUrgent) AmberPendingBg else EmeraldLightBg
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Slate100)
-                            .padding(14.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.Top
+            if (notifications.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(34.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(iconBg),
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(Slate100),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = null,
+                                tint = Slate500,
+                                modifier = Modifier.size(24.dp)
+                            )
                         }
+                        Text(
+                            text = "Nenhum aviso no momento",
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Slate900
+                            )
+                        )
+                        Text(
+                            text = "Avisos da central e alertas operacionais aparecerão aqui.",
+                            style = MaterialTheme.typography.bodySmall.copy(color = Slate500),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                }
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    notifications.forEach { item ->
+                        val icon = when (item.iconName) {
+                            "bolt" -> Icons.Default.Bolt
+                            "cloud_done" -> Icons.Default.CloudDone
+                            "traffic" -> Icons.Default.Traffic
+                            else -> Icons.Default.Notifications
+                        }
+                        val iconTint = if (item.isUrgent) AmberVibrant else EmeraldDark
+                        val iconBg = if (item.isUrgent) AmberPendingBg else EmeraldLightBg
 
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Slate100)
+                                .padding(14.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(iconBg),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = item.title,
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = Slate900
+                                Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
+                            }
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = item.title,
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = Slate900
+                                        )
                                     )
-                                )
+                                    Text(
+                                        text = item.timeAgo,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = Slate500,
+                                            fontSize = 10.sp
+                                        )
+                                    )
+                                }
                                 Text(
-                                    text = item.timeAgo,
-                                    style = MaterialTheme.typography.labelSmall.copy(
+                                    text = item.description,
+                                    style = MaterialTheme.typography.bodySmall.copy(
                                         color = Slate500,
-                                        fontSize = 10.sp
-                                    )
+                                        lineHeight = 16.sp
+                                    ),
+                                    modifier = Modifier.padding(top = 2.dp)
                                 )
                             }
-                            Text(
-                                text = item.description,
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = Slate500,
-                                    lineHeight = 16.sp
-                                ),
-                                modifier = Modifier.padding(top = 2.dp)
-                            )
                         }
                     }
                 }

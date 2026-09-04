@@ -36,59 +36,69 @@ data class TripItem(
     val status: TripStatusType,
     val statusBadgeText: String,
     val isAvailableToClaim: Boolean = false,
+    val driverId: String? = null,
     val origin: RoutePoint,
     val destination: RoutePoint,
     val distanceInfo: String,
     val passengersCount: Int,
     val luggageInfo: String,
-    val specialPerk: String? = null,
+    val notes: String? = null,
     val passengerName: String,
-    val passengerSubtitle: String,
-    val passengerInitials: String,
     val passengerPhone: String = "+5511999999999",
-    val passengerAvatarUrl: String? = null,
     val payoutAmount: Double,
     val payoutLabel: String = "A Receber",
-    val flightDetails: String? = null,
-    val paymentMethod: String = "PIX ou Dinheiro"
-)
+    val paymentMethod: String = "PIX"
+) {
+    val passengerInitials: String
+        get() = passengerName.split(" ")
+            .filter { it.isNotBlank() }
+            .take(2)
+            .map { it.first() }
+            .joinToString("")
+            .uppercase()
+}
 
 data class DriverProfile(
     val id: String,
     val name: String,
     val vehicleModel: String,
     val vehiclePlate: String,
-    val rating: Double,
-    val completedTripsCount: Int,
     val isOnline: Boolean,
     val shift: String,
-    val avatarUrl: String,
     val earningsToday: Double,
     val completedToday: Int,
     val phone: String = "+5513998887766",
     val pixKey: String = "carlos.transfers@litoral.com.br"
-)
+) {
+    val initials: String
+        get() = name.split(" ")
+            .filter { it.isNotBlank() }
+            .take(2)
+            .map { it.first() }
+            .joinToString("")
+            .uppercase()
+}
 
 data class ActiveTransfer(
     val tripId: String,
     val passengerName: String,
-    val passengerSubtitle: String,
-    val passengerAvatarUrl: String,
     val passengerPhone: String,
-    val remainingMinutes: Int,
-    val remainingDistanceKm: Double,
-    val estimatedArrival: String,
     val currentStepIndex: Int, // 0: Despacho, 1: A caminho, 2: Embarcado, 3: Concluído
     val routeSummary: String,
-    val trafficCondition: String,
     val origin: RoutePoint,
     val destination: RoutePoint,
-    val centralAlert: String,
+    val notes: String? = null,
     val fareToCollect: Double,
-    val paymentMode: String,
-    val paymentNote: String,
-    val mapImageUrl: String
-)
+    val paymentMode: String
+) {
+    val passengerInitials: String
+        get() = passengerName.split(" ")
+            .filter { it.isNotBlank() }
+            .take(2)
+            .map { it.first() }
+            .joinToString("")
+            .uppercase()
+}
 
 data class CompletedTrip(
     val id: String,
@@ -98,13 +108,13 @@ data class CompletedTrip(
     val origin: String,
     val destination: String,
     val fareAmount: Double,
-    val statusText: String = "Recebido"
+    val paymentMethod: String = "PIX",
+    val statusText: String = "Concluído"
 )
 
 data class EarningsSummary(
     val weeklyTotal: Double,
     val tripsCompletedWeekly: Int,
-    val goalPercentage: Int,
     val receivedOnSite: Double,
     val fleetSettlement: Double,
     val todayTotal: Double,

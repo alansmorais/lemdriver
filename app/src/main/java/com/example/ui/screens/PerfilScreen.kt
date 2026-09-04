@@ -2,7 +2,6 @@ package com.example.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,15 +23,10 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material.icons.filled.WaterDrop
-import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -41,16 +35,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.example.model.DriverProfile
-import com.example.ui.theme.AmberDeep
-import com.example.ui.theme.AmberHighlight
-import com.example.ui.theme.AmberVibrant
 import com.example.ui.theme.DestRedBg
 import com.example.ui.theme.DestRedText
 import com.example.ui.theme.EmeraldDark
@@ -60,7 +49,6 @@ import com.example.ui.theme.EmeraldOriginText
 import com.example.ui.theme.EmeraldVibrant
 import com.example.ui.theme.PrimaryContainer
 import com.example.ui.theme.Slate100
-import com.example.ui.theme.Slate200
 import com.example.ui.theme.Slate300
 import com.example.ui.theme.Slate500
 import com.example.ui.theme.Slate700
@@ -103,19 +91,21 @@ fun PerfilScreen(
                         modifier = Modifier
                             .size(76.dp)
                             .clip(CircleShape)
-                            .background(Slate100)
+                            .background(PrimaryContainer),
+                        contentAlignment = Alignment.Center
                     ) {
-                        AsyncImage(
-                            model = driver.avatarUrl,
-                            contentDescription = "Foto ${driver.name}",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
+                        Text(
+                            text = driver.initials,
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                color = SurfaceWhite,
+                                fontWeight = FontWeight.Bold
+                            )
                         )
                     }
 
                     Box(
                         modifier = Modifier
-                            .size(18.dp)
+                            .size(20.dp)
                             .clip(CircleShape)
                             .background(if (driver.isOnline) EmeraldVibrant else Slate500)
                             .border(3.dp, SurfaceWhite, CircleShape)
@@ -123,25 +113,14 @@ fun PerfilScreen(
                 }
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = driver.name,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Slate900,
-                                fontSize = 18.sp
-                            )
+                    Text(
+                        text = driver.name,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Slate900,
+                            fontSize = 18.sp
                         )
-                        Icon(
-                            imageVector = Icons.Default.Verified,
-                            contentDescription = null,
-                            tint = AmberVibrant,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
+                    )
 
                     Text(
                         text = "${driver.vehicleModel} • Placa ${driver.vehiclePlate}",
@@ -150,26 +129,6 @@ fun PerfilScreen(
                             fontSize = 13.sp
                         )
                     )
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.padding(top = 4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = AmberVibrant,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text(
-                            text = "${String.format("%.2f", driver.rating)} • ${driver.completedTripsCount} viagens concluídas",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                color = Slate700,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    }
                 }
 
                 // Online/Offline Status Switch Row
@@ -201,7 +160,7 @@ fun PerfilScreen(
                                 )
                             )
                             Text(
-                                text = if (driver.isOnline) "Recebendo despachos em tempo real" else "Escala pausada",
+                                text = if (driver.isOnline) "Recebendo despachos da planilha" else "Escala pausada",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = Slate500,
                                     fontSize = 10.sp
@@ -237,7 +196,7 @@ fun PerfilScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Shield, contentDescription = null, tint = AmberDeep, modifier = Modifier.size(20.dp))
+                    Icon(imageVector = Icons.Default.Shield, contentDescription = null, tint = EmeraldDark, modifier = Modifier.size(20.dp))
                     Text(
                         text = "Padrão de Atendimento Frota",
                         style = MaterialTheme.typography.labelLarge.copy(
@@ -248,10 +207,10 @@ fun PerfilScreen(
                 }
 
                 val standards = listOf(
-                    "Traje executivo / camisa polo oficial Litoral",
+                    "Traje executivo oficial Litoral em Movimento",
                     "Veículo higienizado e ar-condicionado calibrado",
-                    "Água mineral e Wi-Fi de bordo disponíveis",
-                    "Waze / Google Maps atualizados com trânsito em tempo real"
+                    "Água mineral disponível para os passageiros",
+                    "Rotas com trânsito em tempo real (Waze / Maps)"
                 )
 
                 standards.forEach { item ->
@@ -292,7 +251,7 @@ fun PerfilScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    text = "DADOS CADASTRAIS",
+                    text = "DADOS CADASTRAIS NA PLANILHA",
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = Slate500,
                         fontWeight = FontWeight.ExtraBold,
@@ -313,7 +272,15 @@ fun PerfilScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("Telefone WhatsApp", style = MaterialTheme.typography.bodySmall.copy(color = Slate500))
-                    Text(driver.phone, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = Slate900))
+                    Text(if (driver.phone.isNotBlank()) driver.phone else "Não informado", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = if (driver.phone.isNotBlank()) Slate900 else Slate500))
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Chave PIX", style = MaterialTheme.typography.bodySmall.copy(color = Slate500))
+                    Text(if (driver.pixKey.isNotBlank()) driver.pixKey else "Não informada", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = if (driver.pixKey.isNotBlank()) Slate900 else Slate500))
                 }
 
                 Row(
@@ -321,7 +288,7 @@ fun PerfilScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("Base Operacional", style = MaterialTheme.typography.bodySmall.copy(color = Slate500))
-                    Text("Santos / Baixada Santista", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = Slate900))
+                    Text("Santos / Baixada Santista / SP", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = Slate900))
                 }
             }
         }

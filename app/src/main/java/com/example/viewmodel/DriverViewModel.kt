@@ -76,15 +76,25 @@ class DriverViewModel(
 
     val minhasCount: StateFlow<Int> = trips.combine(MutableStateFlow(Unit)) { allTrips, _ ->
         allTrips.count { !it.isAvailableToClaim }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 3)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     val disponiveisCount: StateFlow<Int> = trips.combine(MutableStateFlow(Unit)) { allTrips, _ ->
         allTrips.count { it.isAvailableToClaim }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 2)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     val todasCount: StateFlow<Int> = trips.combine(MutableStateFlow(Unit)) { allTrips, _ ->
         allTrips.size
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 4)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    fun addTrip(trip: TripItem) {
+        repository.addTrip(trip)
+        showToast("Escala ${trip.id} cadastrada com sucesso!", "add_task")
+    }
+
+    fun updateProfile(name: String, vehicleModel: String, vehiclePlate: String, phone: String, pixKey: String) {
+        repository.updateProfile(name, vehicleModel, vehiclePlate, phone, pixKey)
+        showToast("Perfil atualizado!", "check_circle")
+    }
 
     fun navigateTo(screen: AppScreen) {
         _currentScreen.value = screen

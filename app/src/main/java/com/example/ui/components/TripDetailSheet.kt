@@ -24,8 +24,8 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.FlightTakeoff
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Luggage
+import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,10 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.TripItem
-import com.example.model.TripStatusType
-import com.example.ui.theme.AmberDeep
-import com.example.ui.theme.AmberPendingBg
-import com.example.ui.theme.AmberPendingText
+import com.example.ui.theme.AmberHighlight
 import com.example.ui.theme.AmberVibrant
 import com.example.ui.theme.BrandBlue
 import com.example.ui.theme.BrandBlueBg
@@ -64,6 +61,7 @@ import com.example.ui.theme.PrimaryContainer
 import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate300
 import com.example.ui.theme.Slate500
+import com.example.ui.theme.Slate700
 import com.example.ui.theme.Slate900
 import com.example.ui.theme.SurfaceWhite
 
@@ -286,7 +284,7 @@ fun TripDetailSheet(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Specs (Passageiros, Malas, Inclusos)
+            // Specs (Passageiros, Malas)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -303,11 +301,29 @@ fun TripDetailSheet(
                     }
                 }
 
-                if (trip.specialPerk != null) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                        Icon(imageVector = Icons.Default.Star, contentDescription = null, tint = AmberVibrant, modifier = Modifier.size(14.dp))
-                        Text(text = trip.specialPerk, style = MaterialTheme.typography.labelSmall.copy(color = Slate500, fontSize = 11.sp))
-                    }
+                Text(
+                    text = trip.paymentMethod,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = EmeraldDark,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+
+            // Central Notes if present
+            trip.notes?.let { notesText ->
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Slate100)
+                        .padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.ReceiptLong, contentDescription = null, tint = Slate500, modifier = Modifier.size(16.dp))
+                    Text(text = "Obs Planilha: $notesText", style = MaterialTheme.typography.bodySmall.copy(color = Slate700))
                 }
             }
 
@@ -352,7 +368,7 @@ fun TripDetailSheet(
                             )
                         )
                         Text(
-                            text = trip.passengerSubtitle,
+                            text = trip.passengerPhone,
                             style = MaterialTheme.typography.bodySmall.copy(color = Slate500, fontSize = 11.sp)
                         )
                     }
@@ -360,7 +376,8 @@ fun TripDetailSheet(
 
                 OutlinedButton(
                     onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/${trip.passengerPhone.replace("+", "")}"))
+                        val cleanNumber = trip.passengerPhone.replace("+", "").replace(" ", "").replace("-", "")
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$cleanNumber"))
                         context.startActivity(intent)
                     },
                     shape = RoundedCornerShape(10.dp),
@@ -424,7 +441,7 @@ fun TripDetailSheet(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.height(46.dp)
                     ) {
-                        Icon(imageVector = Icons.Default.DirectionsCar, contentDescription = null, tint = AmberVibrant, modifier = Modifier.size(18.dp))
+                        Icon(imageVector = Icons.Default.DirectionsCar, contentDescription = null, tint = AmberHighlight, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text("Iniciar Corrida", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
                     }

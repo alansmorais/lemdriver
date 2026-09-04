@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Pin
 import androidx.compose.material.icons.filled.SupportAgent
@@ -61,7 +62,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -70,25 +70,21 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.example.model.DriverProfile
 import com.example.ui.theme.AmberDeep
 import com.example.ui.theme.AmberHighlight
-import com.example.ui.theme.AmberPendingBg
 import com.example.ui.theme.AmberVibrant
 import com.example.ui.theme.BrandBlue
 import com.example.ui.theme.BrandBlueBg
 import com.example.ui.theme.EmeraldDark
 import com.example.ui.theme.EmeraldLightBg
 import com.example.ui.theme.EmeraldOriginBg
-import com.example.ui.theme.EmeraldOriginText
 import com.example.ui.theme.EmeraldVibrant
 import com.example.ui.theme.PrimaryContainer
 import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate200
 import com.example.ui.theme.Slate300
 import com.example.ui.theme.Slate500
-import com.example.ui.theme.Slate800
 import com.example.ui.theme.Slate900
 import com.example.ui.theme.SlateBg
 import com.example.ui.theme.SurfaceContainerLow
@@ -208,15 +204,14 @@ fun LoginScreen(
                         modifier = Modifier
                             .size(52.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(SurfaceWhite)
-                            .padding(4.dp),
+                            .background(SurfaceWhite.copy(alpha = 0.12f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        AsyncImage(
-                            model = "https://lh3.googleusercontent.com/aida-public/AB6AXuB-ElUdIhbcpsnPN-6RbU9Nomz07Zli9GjCcOMiFqltIKE9PSDYy9ngI9KmDKcAuexz1L7cklLI6MnDuuxcj541MrN3iUO_L46nqOlNc2PRU0y6_k5FuEp4YHgKVilXZslVyoHGpKfuu_lD0cz8c5yGoKtZfK4zrSKzmePsmL9DEXgakGXJ8pdcpgKN3QOFoaT5-IBpas_NwmSEaN4xvxU6ZvZhkGMPbOXKykU1heGzD6Fn0scvI8gj",
+                        Icon(
+                            imageVector = Icons.Default.DirectionsCar,
                             contentDescription = "Logo",
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier.fillMaxSize()
+                            tint = AmberHighlight,
+                            modifier = Modifier.size(28.dp)
                         )
                     }
 
@@ -542,49 +537,17 @@ fun LoginScreen(
 
                         Column {
                             Text(
-                                text = "Litoral Norte & Baixada Santista",
+                                text = "Litoral & Região Metropolitana",
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = Slate900
                                 )
                             )
                             Text(
-                                text = "Corredores Santos, Guarujá, Bertioga e SP",
+                                text = "Santos, Guarujá, Bertioga, Litoral Norte e SP",
                                 style = MaterialTheme.typography.bodySmall.copy(color = Slate500)
                             )
                         }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .clip(CircleShape)
-                                    .background(EmeraldVibrant)
-                            )
-                            Text(
-                                text = "9 Transfers Pendentes",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = EmeraldDark,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-                        }
-                        Text(
-                            text = "Atualizado às 14:32",
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = Slate500,
-                                fontSize = 11.sp
-                            )
-                        )
                     }
                 }
             }
@@ -628,7 +591,7 @@ fun LoginScreen(
                                 )
                             )
                             Text(
-                                text = "Dúvidas de escala ou veículo?",
+                                text = "Dúvidas de escala ou planilha?",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = Slate500,
                                     fontSize = 11.sp
