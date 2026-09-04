@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "Portal do Motorista"
+rootProject.name = "LEM Motoristas"
 
 include(":app")

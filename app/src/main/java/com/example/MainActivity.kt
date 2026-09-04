@@ -24,8 +24,11 @@ import com.example.model.AppScreen
 import com.example.ui.components.AppBottomNav
 import com.example.ui.components.AppHeader
 import com.example.ui.components.ConfirmCompleteDialog
+import com.example.ui.components.DeclineRideDialog
+import com.example.ui.components.ExtraKmDialog
 import com.example.ui.components.IncidentReportModal
 import com.example.ui.components.NotificationSheet
+import com.example.ui.components.SheetsConfigDialog
 import com.example.ui.components.ToastNotification
 import com.example.ui.components.TripDetailSheet
 import com.example.ui.screens.EmRotaScreen
@@ -61,6 +64,7 @@ fun DriverApp(
     val currentScreen by viewModel.currentScreen.collectAsState()
     val currentDriver by viewModel.currentDriver.collectAsState()
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+    val availableDrivers by viewModel.availableDrivers.collectAsState()
     val trips by viewModel.filteredTrips.collectAsState()
     val selectedCategory by viewModel.selectedTripCategory.collectAsState()
     val minhasCount by viewModel.minhasCount.collectAsState()
@@ -76,9 +80,13 @@ fun DriverApp(
     val toastMessage by viewModel.toastMessage.collectAsState()
     val toastIcon by viewModel.toastIcon.collectAsState()
     val selectedTripForDetails by viewModel.selectedTripForDetails.collectAsState()
+    val tripToDecline by viewModel.tripToDecline.collectAsState()
+    val showExtraKmDialog by viewModel.showExtraKmDialog.collectAsState()
+    val showSheetsConfigDialog by viewModel.showSheetsConfigDialog.collectAsState()
     val showIncidentModal by viewModel.showIncidentModal.collectAsState()
     val showNotificationSheet by viewModel.showNotificationSheet.collectAsState()
     val showConfirmCompleteDialog by viewModel.showConfirmCompleteDialog.collectAsState()
+    val backendConfig by viewModel.backendConfig.collectAsState()
 
     val showBottomNav = isLoggedIn && currentScreen != AppScreen.LOGIN
 
@@ -117,8 +125,9 @@ fun DriverApp(
             ) { targetScreen ->
                 when (targetScreen) {
                     AppScreen.LOGIN -> LoginScreen(
-                        availableDrivers = viewModel.availableDrivers,
-                        onLogin = { id, pin, shift -> viewModel.login(id, pin, shift) }
+                        availableDrivers = availableDrivers,
+                        onLogin = { id, pin, shift -> viewModel.login(id, pin, shift) },
+                        onOpenSheetsConfig = { viewModel.openSheetsConfigDialog() }
                     )
 
                     AppScreen.VIAGENS -> ViagensScreen(
@@ -134,14 +143,18 @@ fun DriverApp(
                         onCategorySelected = { viewModel.selectCategory(it) },
                         onSyncFeed = { viewModel.syncFeed() },
                         onStartTrip = { viewModel.startTrip(it) },
+                        onAcceptTrip = { viewModel.acceptTrip(it) },
+                        onDeclineTrip = { viewModel.promptDeclineTrip(it) },
                         onClaimTrip = { viewModel.claimTrip(it) },
-                        onTripDetails = { viewModel.openTripDetails(it) }
+                        onTripDetails = { viewModel.openTripDetails(it) },
+                        onOpenSheetsConfig = { viewModel.openSheetsConfigDialog() }
                     )
 
                     AppScreen.EM_ROTA -> EmRotaScreen(
                         activeTransfer = activeTransfer,
                         onAdvanceStep = { viewModel.advanceStep(it) },
                         onCompleteTrip = { viewModel.openConfirmCompleteDialog() },
+                        onOpenExtraKmDialog = { viewModel.openExtraKmDialog() },
                         onReportIncident = { viewModel.openIncidentModal() },
                         onNavigateBackToFeed = { viewModel.navigateTo(AppScreen.VIAGENS) }
                     )
@@ -201,6 +214,44 @@ fun DriverApp(
                     passengerName = activeTransfer?.passengerName ?: "",
                     onConfirm = { viewModel.completeTrip() },
                     onDismiss = { viewModel.closeConfirmCompleteDialog() }
+                )
+            }
+
+            // Decline Trip Modal
+            tripToDecline?.let { trip ->
+                DeclineRideDialog(
+                    trip = trip,
+                    onConfirmDecline = { reason -> viewModel.confirmDeclineTrip(reason) },
+                    onDismiss = { viewModel.dismissDeclineTrip() }
+                )
+            }
+
+            // Extra KM & Extras Modal
+            if (showExtraKmDialog && activeTransfer != null) {
+                ExtraKmDialog(
+                    activeTransfer = activeTransfer!!,
+                    onApplyKm = { km, rate, reason ->
+                        viewModel.addExtraKm(km, rate, reason)
+                    },
+                    onApplyOtherExtra = { amount, reason ->
+                        viewModel.addOtherExtras(amount, reason)
+                    },
+                    onClearExtras = {
+                        viewModel.clearExtras()
+                    },
+                    onDismiss = { viewModel.closeExtraKmDialog() }
+                )
+            }
+
+            // Google Sheets Integration Config Dialog
+            if (showSheetsConfigDialog) {
+                SheetsConfigDialog(
+                    currentUrl = viewModel.getWebAppUrl(),
+                    backendConfig = backendConfig,
+                    onSaveUrlAndSync = { newUrl ->
+                        viewModel.setWebAppUrl(newUrl)
+                    },
+                    onDismiss = { viewModel.closeSheetsConfigDialog() }
                 )
             }
         }

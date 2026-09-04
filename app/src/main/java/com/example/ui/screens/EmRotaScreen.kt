@@ -60,6 +60,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.ActiveTransfer
 import com.example.ui.theme.AmberHighlight
+import com.example.ui.theme.AmberPendingBg
+import com.example.ui.theme.AmberPendingText
 import com.example.ui.theme.AmberVibrant
 import com.example.ui.theme.BrandBlue
 import com.example.ui.theme.BrandBlueBg
@@ -85,6 +87,7 @@ fun EmRotaScreen(
     activeTransfer: ActiveTransfer?,
     onAdvanceStep: (Int) -> Unit,
     onCompleteTrip: () -> Unit,
+    onOpenExtraKmDialog: () -> Unit = {},
     onReportIncident: () -> Unit,
     onNavigateBackToFeed: () -> Unit,
     modifier: Modifier = Modifier
@@ -680,38 +683,94 @@ fun EmRotaScreen(
                 }
             }
 
-            // Fare & Payment Method Box
+            // Fare & Payment Method Box with Extra KM Controls
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 color = SurfaceWhite,
                 shadowElevation = 2.dp
             ) {
-                Row(
+                Column(
                     modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column {
-                        Text(
-                            text = "Valor a Receber (${activeTransfer.paymentMode})",
-                            style = MaterialTheme.typography.labelSmall.copy(color = Slate500)
-                        )
-                        Text(
-                            text = "R$ ${String.format("%.2f", activeTransfer.fareToCollect)}",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.ExtraBold,
-                                color = EmeraldDark
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                text = "SALDO A RECEBER NO EMBARQUE (${activeTransfer.paymentMode})",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = Slate500,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 10.sp
+                                )
                             )
-                        )
+                            Text(
+                                text = "R$ ${String.format("%.2f", activeTransfer.fareToCollect)}",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = EmeraldDark,
+                                    fontSize = 22.sp
+                                )
+                            )
+                        }
+
+                        // Button to open Extra KM / Adicionais
+                        Button(
+                            onClick = onOpenExtraKmDialog,
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = AmberVibrant,
+                                contentColor = Slate900
+                            ),
+                            modifier = Modifier.testTag("open_extra_km_dialog_btn")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AltRoute,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "+ KM Extra",
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
                     }
 
-                    Icon(
-                        imageVector = Icons.Default.Payments,
-                        contentDescription = null,
-                        tint = EmeraldDark,
-                        modifier = Modifier.size(28.dp)
-                    )
+                    // Extra KM / Adicionais Breakdown if present
+                    if (activeTransfer.totalExtras > 0) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = AmberPendingBg,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = if (activeTransfer.extraKm > 0) "+${String.format("%.1f", activeTransfer.extraKm)} KM extra (${activeTransfer.extraReason ?: "Adicionado em rota"})" else (activeTransfer.extraReason ?: "Adicional"),
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = AmberPendingText,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 11.sp
+                                    )
+                                )
+                                Text(
+                                    text = "+ R$ ${String.format("%.2f", activeTransfer.totalExtras)}",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = AmberPendingText,
+                                        fontWeight = FontWeight.ExtraBold
+                                    )
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

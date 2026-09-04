@@ -94,12 +94,13 @@ import com.example.ui.theme.SurfaceWhite
 fun LoginScreen(
     availableDrivers: List<DriverProfile>,
     onLogin: (driverId: String, pin: String, shift: String) -> Unit,
+    onOpenSheetsConfig: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var selectedDriver by remember { mutableStateOf(availableDrivers.firstOrNull()) }
+    var selectedDriver by remember(availableDrivers) { mutableStateOf(availableDrivers.firstOrNull()) }
     var dropdownExpanded by remember { mutableStateOf(false) }
-    var pinCode by remember { mutableStateOf("1234") }
+    var pinCode by remember { mutableStateOf("2026") }
     var isPinVisible by remember { mutableStateOf(false) }
     var selectedShift by remember { mutableStateOf("Manhã") }
 
@@ -164,6 +165,7 @@ fun LoginScreen(
                     modifier = Modifier
                         .clip(CircleShape)
                         .background(EmeraldLightBg)
+                        .clickable { onOpenSheetsConfig() }
                         .padding(horizontal = 10.dp, vertical = 3.dp)
                 ) {
                     Row(
@@ -378,6 +380,13 @@ fun LoginScreen(
                                 unfocusedContainerColor = Slate100,
                                 focusedBorderColor = BrandBlue,
                                 unfocusedBorderColor = Color.Transparent
+                            )
+                        )
+                        Text(
+                            text = "PIN Padrão: 4 últimos dígitos do celular (Carlos: 6655, Marcos: 3210) ou 2026",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = Slate500,
+                                fontSize = 11.sp
                             )
                         )
                     }

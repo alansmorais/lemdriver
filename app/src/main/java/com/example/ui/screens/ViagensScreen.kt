@@ -99,8 +99,11 @@ fun ViagensScreen(
     onCategorySelected: (TripCategory) -> Unit,
     onSyncFeed: () -> Unit,
     onStartTrip: (String) -> Unit,
+    onAcceptTrip: (String) -> Unit = {},
+    onDeclineTrip: (TripItem) -> Unit = {},
     onClaimTrip: (String) -> Unit,
     onTripDetails: (TripItem) -> Unit,
+    onOpenSheetsConfig: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -417,6 +420,8 @@ fun ViagensScreen(
                     TripCard(
                         trip = trip,
                         onStartTrip = { onStartTrip(trip.id) },
+                        onAcceptTrip = { onAcceptTrip(trip.id) },
+                        onDeclineTrip = { onDeclineTrip(trip) },
                         onClaimTrip = { onClaimTrip(trip.id) },
                         onTripDetails = { onTripDetails(trip) },
                         onOpenWhatsApp = {
@@ -439,6 +444,8 @@ fun ViagensScreen(
 fun TripCard(
     trip: TripItem,
     onStartTrip: () -> Unit,
+    onAcceptTrip: () -> Unit,
+    onDeclineTrip: () -> Unit,
     onClaimTrip: () -> Unit,
     onTripDetails: () -> Unit,
     onOpenWhatsApp: () -> Unit
@@ -495,9 +502,11 @@ fun TripCard(
                 val (statusBg, statusTextColor) = when (trip.status) {
                     TripStatusType.CONFIRMADO -> Pair(EmeraldOriginBg, EmeraldOriginText)
                     TripStatusType.LIVRE_NA_FROTA -> Pair(BrandBlueBg, BrandBlue)
+                    TripStatusType.PENDENTE_ACEITE -> Pair(AmberPendingBg, AmberPendingText)
                     TripStatusType.AGENDADO -> Pair(AmberPendingBg, AmberPendingText)
                     TripStatusType.EM_ANDAMENTO -> Pair(EmeraldLightBg, EmeraldDark)
                     TripStatusType.CONCLUIDO -> Pair(Slate100, Slate500)
+                    TripStatusType.RECUSADO -> Pair(DestRedBg, DestRedText)
                 }
 
                 Box(
@@ -742,7 +751,7 @@ fun TripCard(
                 }
             }
 
-            // Payout Row & Action Button
+            // Payout Row & Action Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -750,14 +759,14 @@ fun TripCard(
             ) {
                 Column {
                     Text(
-                        text = "Valor da Planilha (${trip.paymentMethod})",
+                        text = if (trip.remainingAmount > 0) "Saldo no Embarque (${trip.paymentMethod})" else "Valor Total (${trip.paymentMethod})",
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = Slate500,
                             fontSize = 10.sp
                         )
                     )
                     Text(
-                        text = "R$ ${String.format("%.2f", trip.payoutAmount)}",
+                        text = "R$ ${String.format("%.2f", if (trip.remainingAmount > 0) trip.remainingAmount else trip.payoutAmount)}",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.ExtraBold,
                             color = Slate900,
@@ -781,26 +790,60 @@ fun TripCard(
                             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }
+                } else if (trip.isAssignedToMe && !trip.isAcceptedByDriver) {
+                    // Step 2: Accept or Decline assigned ride
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = onDeclineTrip,
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = DestRedText),
+                            modifier = Modifier.height(40.dp)
+                        ) {
+                            Text("Recusar", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                        }
+
+                        Button(
+                            onClick = onAcceptTrip,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = EmeraldVibrant,
+                                contentColor = SurfaceWhite
+                            ),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.height(40.dp)
+                        ) {
+                            Text("Aceitar", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                        }
+                    }
                 } else {
-                    Button(
-                        onClick = onStartTrip,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = AmberVibrant,
-                            contentColor = Slate900
-                        ),
-                        shape = RoundedCornerShape(10.dp),
-                        modifier = Modifier.height(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Navigation,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Iniciar Viagem",
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                        )
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        OutlinedButton(
+                            onClick = onDeclineTrip,
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.height(40.dp)
+                        ) {
+                            Text("Recusar", style = MaterialTheme.typography.labelSmall.copy(color = Slate500))
+                        }
+
+                        Button(
+                            onClick = onStartTrip,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = AmberVibrant,
+                                contentColor = Slate900
+                            ),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.height(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Navigation,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Iniciar",
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
                     }
                 }
             }

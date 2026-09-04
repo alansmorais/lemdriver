@@ -1,6 +1,6 @@
 {
-  "name": "Portal do Motorista",
-  "description": "App operacional para motoristas executivos da frota Litoral em Movimento com gestão de viagens, rotas ao vivo, etapas de transfer e controle financeiro de ganhos.",
+  "name": "LEM Motoristas",
+  "description": "Aplicativo operacional dos motoristas executivos da frota Chevrolet Spin 7L da Litoral em Movimento (LEM) com gestão de escalas, aceitar/recusar corridas, cobrança de km extra e integração Google Sheets.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
