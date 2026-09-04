@@ -59,7 +59,7 @@ fun LemBrandLogo(
     isDarkTheme: Boolean = true
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {

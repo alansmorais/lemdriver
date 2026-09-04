@@ -40,6 +40,7 @@ class DriverViewModel(
     val completedTrips: StateFlow<List<CompletedTrip>> = repository.completedTrips
     val notifications: StateFlow<List<FleetNotification>> = repository.notifications
     val lastSyncTime: StateFlow<String> = repository.lastSyncTime
+    val newlyAssignedTrip: StateFlow<TripItem?> = repository.newlyAssignedTrip
 
     private val _currentScreen = MutableStateFlow(AppScreen.LOGIN)
     val currentScreen: StateFlow<AppScreen> = _currentScreen.asStateFlow()
@@ -81,7 +82,7 @@ class DriverViewModel(
     val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
 
     init {
-        // Automatically sync on launch and every 60 seconds
+        // Automatically sync on launch and every 15 seconds for real-time dispatch alerts
         viewModelScope.launch {
             while (isActive) {
                 try {
@@ -92,7 +93,7 @@ class DriverViewModel(
                 } finally {
                     _isSyncing.value = false
                 }
-                delay(60_000L) // Sincronização automática a cada 60 segundos
+                delay(15_000L) // Sincronização automática em tempo real a cada 15 segundos
             }
         }
     }
@@ -340,6 +341,31 @@ class DriverViewModel(
     fun addTrip(trip: TripItem) {
         repository.addTrip(trip)
         showToast("Escala adicionada!", "add_task")
+    }
+
+    fun dismissAssignedTripPopup() {
+        repository.clearNewlyAssignedTrip()
+    }
+
+    fun acceptAndStartAssignedTrip(trip: TripItem) {
+        repository.clearNewlyAssignedTrip()
+        viewModelScope.launch {
+            repository.acceptTrip(trip.id)
+            repository.startTrip(trip.id)
+            _currentScreen.value = AppScreen.EM_ROTA
+            showToast("Corrida aceita! GPS e rota iniciados.", "navigation")
+        }
+    }
+
+    fun viewAssignedTripInList(trip: TripItem) {
+        repository.clearNewlyAssignedTrip()
+        _selectedTripCategory.value = TripCategory.MINHAS
+        _currentScreen.value = AppScreen.VIAGENS
+        _selectedTripForDetails.value = trip
+    }
+
+    fun simulateAssignedTrip() {
+        repository.simulateAssignedTrip()
     }
 
     fun showToast(message: String, icon: String = "check_circle") {

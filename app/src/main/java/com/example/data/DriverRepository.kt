@@ -65,7 +65,11 @@ class DriverRepository(private val context: Context? = null) {
     private val _lastSyncTime = MutableStateFlow("Sincronizando...")
     val lastSyncTime: StateFlow<String> = _lastSyncTime.asStateFlow()
 
+    private val _newlyAssignedTrip = MutableStateFlow<TripItem?>(null)
+    val newlyAssignedTrip: StateFlow<TripItem?> = _newlyAssignedTrip.asStateFlow()
+
     private val knownTripIds = mutableSetOf<String>()
+    private val knownAssignedTripIds = mutableSetOf<String>()
 
     init {
         loadInitialBackendData()
@@ -148,12 +152,36 @@ class DriverRepository(private val context: Context? = null) {
             }
             _trips.value = mapped
 
-            // Detect new reservations and trigger audible notification
+            // 1. Detect if any trip was newly assigned specifically to THIS logged in driver!
+            val myAssignedTrips = mapped.filter {
+                it.isAssignedToMe && it.status != com.example.model.TripStatusType.CONCLUIDO && it.status != com.example.model.TripStatusType.RECUSADO
+            }
+
+            if (_isLoggedIn.value && knownAssignedTripIds.isNotEmpty()) {
+                val newAssignedToMe = myAssignedTrips.filter { it.id !in knownAssignedTripIds }
+                if (newAssignedToMe.isNotEmpty()) {
+                    val assignedTrip = newAssignedToMe.first()
+                    _newlyAssignedTrip.value = assignedTrip
+                    NotificationSoundHelper.playNewReservationSound(context)
+
+                    val newNotif = FleetNotification(
+                        id = "notif-assigned-${System.currentTimeMillis()}-${assignedTrip.id}",
+                        title = "🚨 Corrida Atribuída: ${assignedTrip.code}",
+                        description = "${assignedTrip.origin.title} ➔ ${assignedTrip.destination.title} (${assignedTrip.timeLabel})",
+                        timeAgo = "Agora",
+                        isUrgent = true,
+                        iconName = "notifications_active"
+                    )
+                    _notifications.update { listOf(newNotif) + it }
+                }
+            }
+
+            // 2. Detect general new reservations across the fleet
             val currentIds = mapped.map { it.id }.toSet()
             if (knownTripIds.isNotEmpty()) {
                 val newReservations = mapped.filter { it.id !in knownTripIds }
                 if (newReservations.isNotEmpty()) {
-                    // Play chime and ringtone
+                    // Trigger sound & notif
                     NotificationSoundHelper.playNewReservationSound(context)
 
                     val newNotifs = newReservations.map { newTrip ->
@@ -169,8 +197,11 @@ class DriverRepository(private val context: Context? = null) {
                     _notifications.update { newNotifs + it }
                 }
             }
+
             knownTripIds.clear()
             knownTripIds.addAll(currentIds)
+            knownAssignedTripIds.clear()
+            knownAssignedTripIds.addAll(myAssignedTrips.map { it.id })
 
             val timeFormat = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
             _lastSyncTime.value = "Sincronizado às $timeFormat"
@@ -256,9 +287,53 @@ class DriverRepository(private val context: Context? = null) {
                     trip.copy(isAssignedToMe = assignedToCurrent)
                 }
             }
+
+            val activeAssigned = _trips.value.filter {
+                it.isAssignedToMe && it.status != com.example.model.TripStatusType.CONCLUIDO && it.status != com.example.model.TripStatusType.RECUSADO
+            }
+            knownAssignedTripIds.clear()
+            knownAssignedTripIds.addAll(activeAssigned.map { it.id })
+
+            // If the driver has active assigned trips upon login, pop up alert & sound
+            if (activeAssigned.isNotEmpty()) {
+                val latestAssigned = activeAssigned.first()
+                _newlyAssignedTrip.value = latestAssigned
+                NotificationSoundHelper.playNewReservationSound(context)
+            }
+
             return true
         }
         return false
+    }
+
+    fun clearNewlyAssignedTrip() {
+        _newlyAssignedTrip.value = null
+    }
+
+    fun simulateAssignedTrip() {
+        val sampleTrip = _trips.value.firstOrNull { it.isAssignedToMe }
+            ?: _trips.value.firstOrNull()
+            ?: TripItem(
+                id = "res-test-${System.currentTimeMillis()}",
+                code = "#LEM-2026-TEST",
+                passengerName = "Dra. Carolina Mendes (Executivo)",
+                passengerPhone = "(12) 98850-6597",
+                origin = RoutePoint("ORIGEM", "Litoral", "Santos / Gonzaga", "Av. Ana Costa, 450 - Gonzaga, Santos - SP"),
+                destination = RoutePoint("DESTINO", "Aeroporto", "Aeroporto GRU • Terminal 2", "Rod. Hélio Smidt, s/n - Cumbica, Guarulhos - SP"),
+                totalPrice = 480.00,
+                payoutAmount = 480.00,
+                paymentMethod = "PIX Copia e Cola",
+                status = com.example.model.TripStatusType.CONFIRMADO,
+                statusBadgeText = "Confirmado",
+                isAssignedToMe = true,
+                assignedDriverName = _currentDriver.value.name,
+                passengersCount = 4,
+                luggageInfo = "4 malas",
+                flightNumber = "Voo LA-3420 • Desembarque",
+                driverVehicle = _currentDriver.value.vehicleModel
+            )
+        _newlyAssignedTrip.value = sampleTrip
+        NotificationSoundHelper.playNewReservationSound(context)
     }
 
     fun registerNewDriver(name: String, phone: String, vehicleModel: String, vehiclePlate: String, pixKey: String = ""): DriverProfile {

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.VolumeUp
@@ -72,6 +73,7 @@ fun PerfilScreen(
     onLogout: () -> Unit,
     onChangePin: (driverId: String, currentPin: String, newPin: String) -> Boolean = { _, _, _ -> true },
     onPlayTestSound: () -> Unit = {},
+    onSimulateAssignedTrip: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var showChangePasswordDialog by remember { mutableStateOf(false) }
@@ -345,7 +347,18 @@ fun PerfilScreen(
                 ) {
                     Icon(imageVector = Icons.Default.VolumeUp, contentDescription = null, tint = EmeraldDark, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Testar Alerta Sonoro de Reservas", color = Slate900, fontWeight = FontWeight.Bold)
+                    Text("Testar Som de Notificação 🔔", color = Slate900, fontWeight = FontWeight.Bold)
+                }
+
+                // Testar Pop-up de Nova Corrida
+                OutlinedButton(
+                    onClick = onSimulateAssignedTrip,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.Notifications, contentDescription = null, tint = AmberDeep, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("🚨 Testar Pop-up de Corrida Atribuída", color = Slate900, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -372,6 +385,7 @@ fun PerfilScreen(
 
         // Brand Emblem Card
         com.example.ui.components.LemBrandLogo(
+            modifier = Modifier.fillMaxWidth(),
             size = 64.dp,
             showTypography = true,
             isDarkTheme = false

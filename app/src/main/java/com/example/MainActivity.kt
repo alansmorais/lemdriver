@@ -27,6 +27,7 @@ import com.example.ui.components.ConfirmCompleteDialog
 import com.example.ui.components.DeclineRideDialog
 import com.example.ui.components.ExtraKmDialog
 import com.example.ui.components.IncidentReportModal
+import com.example.ui.components.NewTripAssignmentDialog
 import com.example.ui.components.NotificationSheet
 import com.example.ui.components.SheetsConfigDialog
 import com.example.ui.components.ToastNotification
@@ -86,6 +87,7 @@ fun DriverApp(
     val showIncidentModal by viewModel.showIncidentModal.collectAsState()
     val showNotificationSheet by viewModel.showNotificationSheet.collectAsState()
     val showConfirmCompleteDialog by viewModel.showConfirmCompleteDialog.collectAsState()
+    val newlyAssignedTrip by viewModel.newlyAssignedTrip.collectAsState()
     val backendConfig by viewModel.backendConfig.collectAsState()
 
     val showBottomNav = isLoggedIn && currentScreen != AppScreen.LOGIN
@@ -179,7 +181,8 @@ fun DriverApp(
                         onToggleOnline = { viewModel.toggleOnline() },
                         onLogout = { viewModel.logout() },
                         onChangePin = { id, currentPin, newPin -> viewModel.changeDriverPin(id, currentPin, newPin) },
-                        onPlayTestSound = { viewModel.playTestSound() }
+                        onPlayTestSound = { viewModel.playTestSound() },
+                        onSimulateAssignedTrip = { viewModel.simulateAssignedTrip() }
                     )
                 }
             }
@@ -260,6 +263,25 @@ fun DriverApp(
                         viewModel.setWebAppUrl(newUrl)
                     },
                     onDismiss = { viewModel.closeSheetsConfigDialog() }
+                )
+            }
+
+            // New Trip Assignment Pop-up Modal
+            newlyAssignedTrip?.let { trip ->
+                NewTripAssignmentDialog(
+                    trip = trip,
+                    onAcceptAndStart = { acceptedTrip ->
+                        viewModel.acceptAndStartAssignedTrip(acceptedTrip)
+                    },
+                    onViewInList = { assignedTrip ->
+                        viewModel.viewAssignedTripInList(assignedTrip)
+                    },
+                    onDismiss = {
+                        viewModel.dismissAssignedTripPopup()
+                    },
+                    onPlaySoundAgain = {
+                        viewModel.playTestSound()
+                    }
                 )
             }
         }
