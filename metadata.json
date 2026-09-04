@@ -1,6 +1,6 @@
 {
   "name": "LEM Motoristas",
-  "description": "Aplicativo operacional dos motoristas executivos da frota Chevrolet Spin 7L da Litoral em Movimento (LEM) com gestão de escalas, aceitar/recusar corridas, cobrança de km extra e integração Google Sheets.",
+  "description": "Aplicativo operacional dos motoristas executivos da frota Chevrolet Spin 7L da Litoral em Movimento (LEM) com gestão de escalas, aceitar/recusar corridas, cobrança de km extra e sincronização de servidor live.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

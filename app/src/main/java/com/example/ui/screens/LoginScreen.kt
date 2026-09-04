@@ -128,7 +128,7 @@ fun LoginScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Planilha Conectada Header
+            // Server Live Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -156,7 +156,7 @@ fun LoginScreen(
                         )
                     }
                     Text(
-                        text = "Planilha Conectada",
+                        text = "Servidor Ao Vivo",
                         style = MaterialTheme.typography.labelMedium.copy(color = Slate500)
                     )
                 }
@@ -179,7 +179,7 @@ fun LoginScreen(
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
-                            text = "GOOGLE SHEETS LIVE",
+                            text = "SERVER LIVE",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = EmeraldDark,
                                 fontWeight = FontWeight.ExtraBold,

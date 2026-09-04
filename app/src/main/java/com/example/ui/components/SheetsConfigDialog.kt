@@ -101,7 +101,7 @@ fun SheetsConfigDialog(
                 }
                 Column {
                     Text(
-                        text = "Conexão Google Apps Script",
+                        text = "Conexão com Servidor Central",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = Slate900,
@@ -109,7 +109,7 @@ fun SheetsConfigDialog(
                         )
                     )
                     Text(
-                        text = "Litoral em Movimento • Backend Oficial",
+                        text = "Litoral em Movimento • Servidor Live",
                         style = MaterialTheme.typography.bodySmall.copy(color = Slate500)
                     )
                 }
@@ -155,7 +155,7 @@ fun SheetsConfigDialog(
                 }
 
                 Text(
-                    text = "URL DO WEB APP (GOOGLE APPS SCRIPT)",
+                    text = "URL DO SERVIDOR OPERACIONAL (ENDPOINT LIVE)",
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = Slate500,
                         fontWeight = FontWeight.ExtraBold,
@@ -166,7 +166,7 @@ fun SheetsConfigDialog(
                 OutlinedTextField(
                     value = urlInput,
                     onValueChange = { urlInput = it },
-                    placeholder = { Text("https://script.google.com/macros/s/.../exec") },
+                    placeholder = { Text("https://.../exec") },
                     leadingIcon = {
                         Icon(imageVector = Icons.Default.Link, contentDescription = null, tint = Slate500)
                     },
@@ -196,7 +196,7 @@ fun SheetsConfigDialog(
                 )
 
                 Text(
-                    text = "A URL é obtida no editor do Google Apps Script clicando em Implantar -> Nova Implantação -> App da Web (Qualquer pessoa).",
+                    text = "Endpoint seguro do servidor para despacho em tempo real, escalas e controle operacional de passageiros.",
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = Slate500,
                         fontSize = 11.sp
@@ -207,7 +207,7 @@ fun SheetsConfigDialog(
                 OutlinedButton(
                     onClick = {
                         val cleanPhone = backendConfig.contactWhatsapp.filter { it.isDigit() }
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/55$cleanPhone?text=Ol%C3%A1%20Central%20LEM%2C%20preciso%20de%20ajuda%20com%20a%20planilha"))
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/55$cleanPhone?text=Ol%C3%A1%20Central%20LEM%2C%20preciso%20de%20suporte%20com%20a%20conexao%20do%20aplicativo"))
                         context.startActivity(intent)
                     },
                     shape = RoundedCornerShape(10.dp),

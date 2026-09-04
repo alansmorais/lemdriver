@@ -160,7 +160,7 @@ fun PerfilScreen(
                                 )
                             )
                             Text(
-                                text = if (driver.isOnline) "Recebendo despachos da planilha" else "Escala pausada",
+                                text = if (driver.isOnline) "Recebendo despachos do servidor" else "Escala pausada",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = Slate500,
                                     fontSize = 10.sp
@@ -251,7 +251,7 @@ fun PerfilScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    text = "DADOS CADASTRAIS NA PLANILHA",
+                    text = "DADOS CADASTRAIS DA FROTA",
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = Slate500,
                         fontWeight = FontWeight.ExtraBold,

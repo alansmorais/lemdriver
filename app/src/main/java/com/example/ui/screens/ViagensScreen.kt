@@ -260,7 +260,7 @@ fun ViagensScreen(
                                         .background(EmeraldVibrant)
                                 )
                                 Text(
-                                    text = "Planilha Google Sheets Conectada",
+                                    text = "Servidor Operacional Conectado • Live",
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         color = Slate300,
                                         fontSize = 11.sp

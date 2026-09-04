@@ -170,12 +170,12 @@ fun AppHeader(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Sync,
-                                contentDescription = "Sheets Sync",
+                                contentDescription = "Server Live Sync",
                                 tint = EmeraldDark,
                                 modifier = Modifier.size(11.dp)
                             )
                             Text(
-                                text = "Sheets",
+                                text = "Live",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Medium,

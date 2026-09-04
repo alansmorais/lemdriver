@@ -19,6 +19,10 @@ import java.util.concurrent.TimeUnit
 
 class GoogleSheetsService(private val context: Context? = null) {
 
+    companion object {
+        const val DEFAULT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzVXHlSLJykQpgwJBs6OEiLZx70lBstHfQNkB7EvvL275foVcxRCSAzxDUKb8gqEoilNA/exec"
+    }
+
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)
@@ -29,12 +33,12 @@ class GoogleSheetsService(private val context: Context? = null) {
     private val prefs = context?.getSharedPreferences("lem_motoristas_prefs", Context.MODE_PRIVATE)
 
     var webAppUrl: String
-        get() = prefs?.getString("web_app_url", "") ?: ""
+        get() = prefs?.getString("web_app_url", DEFAULT_WEB_APP_URL)?.takeIf { it.isNotBlank() } ?: DEFAULT_WEB_APP_URL
         set(value) {
             prefs?.edit()?.putString("web_app_url", value.trim())?.apply()
         }
 
-    // Default authentic drivers straight from Google Apps Script 'Motoristas' sheet
+    // Default authentic drivers straight from server live backend
     val defaultFleetDrivers = listOf(
         DriverProfile(
             id = "drv-01",
@@ -97,33 +101,42 @@ class GoogleSheetsService(private val context: Context? = null) {
                 return@withContext Result.failure(Exception("HTTP ${response.code}: $body"))
             }
 
-            val json = JSONObject(body)
-            if (json.optString("status") == "ok") {
-                val data = json.optJSONArray("data") ?: JSONArray()
-                val list = mutableListOf<DriverProfile>()
-                for (i in 0 until data.length()) {
-                    val obj = data.getJSONObject(i)
-                    list.add(
-                        DriverProfile(
-                            id = obj.optString("id", "drv-0${i + 1}"),
-                            name = obj.optString("name", "Motorista"),
-                            phone = obj.optString("phone", ""),
-                            email = obj.optString("email", ""),
-                            vehicleModel = obj.optString("vehicle", "Chevrolet Spin 7L"),
-                            vehiclePlate = obj.optString("plate", "SP-LEM7L"),
-                            isOnline = obj.optString("status", "Disponível").contains("Disponível", ignoreCase = true),
-                            rating = obj.optDouble("rating", 4.9),
-                            totalTrips = obj.optInt("trips", 0),
-                            pixKey = obj.optString("pix", "")
-                        )
-                    )
+            val trimmedBody = body.trim()
+            val dataArray: JSONArray = when {
+                trimmedBody.startsWith("[") -> JSONArray(trimmedBody)
+                trimmedBody.startsWith("{") -> {
+                    val json = JSONObject(trimmedBody)
+                    when {
+                        json.has("data") -> json.optJSONArray("data") ?: JSONArray()
+                        json.has("drivers") -> json.optJSONArray("drivers") ?: JSONArray()
+                        json.has("motoristas") -> json.optJSONArray("motoristas") ?: JSONArray()
+                        else -> JSONArray()
+                    }
                 }
-                Result.success(if (list.isNotEmpty()) list else defaultFleetDrivers)
-            } else {
-                Result.failure(Exception(json.optString("message", "Erro ao buscar motoristas")))
+                else -> JSONArray()
             }
+
+            val list = mutableListOf<DriverProfile>()
+            for (i in 0 until dataArray.length()) {
+                val obj = dataArray.optJSONObject(i) ?: continue
+                list.add(
+                    DriverProfile(
+                        id = obj.optString("id", "drv-0${i + 1}"),
+                        name = obj.optString("name", obj.optString("nome", "Motorista")),
+                        phone = obj.optString("phone", obj.optString("telefone", "")),
+                        email = obj.optString("email", ""),
+                        vehicleModel = obj.optString("vehicle", obj.optString("veiculo", "Chevrolet Spin 7L")),
+                        vehiclePlate = obj.optString("plate", obj.optString("placa", "SP-LEM7L")),
+                        isOnline = obj.optString("status", "Disponível").contains("Disponível", ignoreCase = true) || obj.optBoolean("isOnline", true),
+                        rating = obj.optDouble("rating", 4.95),
+                        totalTrips = obj.optInt("trips", obj.optInt("viagens", 0)),
+                        pixKey = obj.optString("pix", obj.optString("chavePix", ""))
+                    )
+                )
+            }
+            Result.success(if (list.isNotEmpty()) list else defaultFleetDrivers)
         } catch (e: Exception) {
-            Log.w("GoogleSheetsService", "Falha ao conectar no Google Apps Script para motoristas: ${e.message}")
+            Log.w("GoogleSheetsService", "Conexão com servidor de motoristas: ${e.message}")
             Result.success(defaultFleetDrivers)
         }
     }
@@ -148,105 +161,122 @@ class GoogleSheetsService(private val context: Context? = null) {
                 return@withContext Result.failure(Exception("HTTP ${response.code}: $body"))
             }
 
-            val json = JSONObject(body)
-            if (json.optString("status") == "ok") {
-                val data = json.optJSONArray("data") ?: JSONArray()
-                val list = mutableListOf<TripItem>()
-                for (i in 0 until data.length()) {
-                    val obj = data.getJSONObject(i)
-                    val id = obj.optString("id", "res-$i")
-                    val code = obj.optString("code", "LM-${2000 + i}")
-                    val rawStatus = obj.optString("status", "Pendente")
-                    val assignedDriver = obj.optString("assignedDriverName").takeIf { it.isNotBlank() }
-                    val driverVehicle = obj.optString("driverVehicle").takeIf { it.isNotBlank() }
-                    val flightNum = obj.optString("flightNumber").takeIf { it.isNotBlank() }
-                    val notes = obj.optString("notes").takeIf { it.isNotBlank() }
-                    val tripType = obj.optString("tripType", "Individual (Exclusivo)")
-                    val orig = obj.optString("origin", "Origem")
-                    val origDet = obj.optString("originDetails", "")
-                    val dest = obj.optString("destination", "Destino")
-                    val destDet = obj.optString("destinationDetails", "")
-                    val date = obj.optString("date", "Hoje")
-                    val time = obj.optString("time", "12:00")
-                    val pax = obj.optInt("passengers", 1)
-                    val luggage = obj.optInt("luggageCount", 1)
-                    val childSeat = obj.optBoolean("hasChildSeat", false) || obj.optString("hasChildSeat").equals("Sim", ignoreCase = true)
-                    val totalPrice = obj.optDouble("totalPrice", 0.0)
-                    val depositAmount = obj.optDouble("depositAmount", 0.0)
-                    val remainingAmount = obj.optDouble("remainingAmount", totalPrice - depositAmount)
-                    val depositPaid = obj.optBoolean("depositPaid", false) || obj.optString("depositPaid").equals("Sim", ignoreCase = true)
-                    val paymentMethod = obj.optString("paymentMethod", "PIX Copia e Cola")
-                    val paymentStatus = obj.optString("paymentStatus", if (depositPaid) "Sinal Pago (50%)" else "Aguardando Sinal")
-
-                    val statusType = when {
-                        rawStatus.contains("Conclu", ignoreCase = true) -> TripStatusType.CONCLUIDO
-                        rawStatus.contains("A caminho", ignoreCase = true) || rawStatus.contains("Andamento", ignoreCase = true) -> TripStatusType.EM_ANDAMENTO
-                        rawStatus.contains("Confirmad", ignoreCase = true) -> TripStatusType.CONFIRMADO
-                        rawStatus.contains("Cancel", ignoreCase = true) -> TripStatusType.RECUSADO
-                        assignedDriver.isNullOrBlank() -> TripStatusType.LIVRE_NA_FROTA
-                        else -> TripStatusType.PENDENTE_ACEITE
+            val trimmedBody = body.trim()
+            val dataArray: JSONArray = when {
+                trimmedBody.startsWith("[") -> JSONArray(trimmedBody)
+                trimmedBody.startsWith("{") -> {
+                    val json = JSONObject(trimmedBody)
+                    when {
+                        json.has("data") -> json.optJSONArray("data") ?: JSONArray()
+                        json.has("reservations") -> json.optJSONArray("reservations") ?: JSONArray()
+                        json.has("reservas") -> json.optJSONArray("reservas") ?: JSONArray()
+                        else -> JSONArray()
                     }
-
-                    list.add(
-                        TripItem(
-                            id = id,
-                            code = code,
-                            transferType = tripType,
-                            timeLabel = "$time • $date",
-                            date = date,
-                            status = statusType,
-                            statusBadgeText = when (statusType) {
-                                TripStatusType.CONFIRMADO -> "Confirmado"
-                                TripStatusType.PENDENTE_ACEITE -> "Aguardando Aceite"
-                                TripStatusType.LIVRE_NA_FROTA -> "Livre na Frota"
-                                TripStatusType.EM_ANDAMENTO -> "Em Rota"
-                                TripStatusType.CONCLUIDO -> "Concluído"
-                                TripStatusType.RECUSADO -> "Recusado"
-                                TripStatusType.AGENDADO -> "Agendado"
-                            },
-                            isAvailableToClaim = assignedDriver.isNullOrBlank(),
-                            isAssignedToMe = false, // will be resolved per driver
-                            isAcceptedByDriver = statusType == TripStatusType.CONFIRMADO || statusType == TripStatusType.EM_ANDAMENTO,
-                            driverId = null,
-                            assignedDriverName = assignedDriver,
-                            driverVehicle = driverVehicle,
-                            origin = RoutePoint(
-                                badge = "A",
-                                categoryTag = "Origem",
-                                title = orig,
-                                subtitle = origDet.ifEmpty { "Ponto de Encontro" }
-                            ),
-                            destination = RoutePoint(
-                                badge = "B",
-                                categoryTag = "Destino",
-                                title = dest,
-                                subtitle = destDet.ifEmpty { "Desembarque" }
-                            ),
-                            distanceInfo = "$tripType • Frota Spin 7L",
-                            passengersCount = pax,
-                            luggageInfo = "$luggage malas",
-                            hasChildSeat = childSeat,
-                            notes = notes,
-                            flightNumber = flightNum,
-                            passengerName = obj.optString("customerName", "Passageiro"),
-                            passengerPhone = obj.optString("customerPhone", ""),
-                            totalPrice = totalPrice,
-                            depositAmount = depositAmount,
-                            remainingAmount = remainingAmount,
-                            depositPaid = depositPaid,
-                            paymentStatus = paymentStatus,
-                            payoutAmount = if (remainingAmount > 0) remainingAmount else totalPrice,
-                            payoutLabel = "Saldo no Embarque",
-                            paymentMethod = paymentMethod
-                        )
-                    )
                 }
-                Result.success(list)
-            } else {
-                Result.failure(Exception(json.optString("message", "Erro ao carregar reservas")))
+                else -> JSONArray()
             }
+
+            val list = mutableListOf<TripItem>()
+            for (i in 0 until dataArray.length()) {
+                val obj = dataArray.optJSONObject(i) ?: continue
+                val id = obj.optString("id", obj.optString("codigo", "res-$i"))
+                val code = obj.optString("code", obj.optString("codigo", "LM-${2000 + i}"))
+                val rawStatus = obj.optString("status", "Pendente")
+                val assignedDriver = (obj.optString("assignedDriverName").takeIf { it.isNotBlank() }
+                    ?: obj.optString("motorista").takeIf { it.isNotBlank() })
+                val driverVehicle = (obj.optString("driverVehicle").takeIf { it.isNotBlank() }
+                    ?: obj.optString("veiculo").takeIf { it.isNotBlank() })
+                val flightNum = (obj.optString("flightNumber").takeIf { it.isNotBlank() }
+                    ?: obj.optString("voo").takeIf { it.isNotBlank() })
+                val notes = (obj.optString("notes").takeIf { it.isNotBlank() }
+                    ?: obj.optString("observacoes").takeIf { it.isNotBlank() })
+                val tripType = obj.optString("tripType", obj.optString("tipo", "Individual (Exclusivo)"))
+                val orig = obj.optString("origin", obj.optString("origem", "Origem"))
+                val origDet = obj.optString("originDetails", obj.optString("detalhesOrigem", ""))
+                val dest = obj.optString("destination", obj.optString("destino", "Destino"))
+                val destDet = obj.optString("destinationDetails", obj.optString("detalhesDestino", ""))
+                val date = obj.optString("date", obj.optString("data", "Hoje"))
+                val time = obj.optString("time", obj.optString("horario", obj.optString("hora", "12:00")))
+                val pax = if (obj.has("passengers")) obj.optInt("passengers", 1) else obj.optInt("passageiros", 1)
+                val luggage = if (obj.has("luggageCount")) obj.optInt("luggageCount", 1) else obj.optInt("malas", 1)
+                val childSeat = obj.optBoolean("hasChildSeat", false)
+                    || obj.optString("hasChildSeat").equals("Sim", ignoreCase = true)
+                    || obj.optString("cadeirinha").equals("Sim", ignoreCase = true)
+                val totalPrice = if (obj.has("totalPrice")) obj.optDouble("totalPrice", 0.0) else obj.optDouble("valorTotal", obj.optDouble("valor", 0.0))
+                val depositAmount = if (obj.has("depositAmount")) obj.optDouble("depositAmount", 0.0) else obj.optDouble("valorSinal", obj.optDouble("sinal", 0.0))
+                val remainingAmount = if (obj.has("remainingAmount")) obj.optDouble("remainingAmount", totalPrice - depositAmount) else obj.optDouble("valorRestante", totalPrice - depositAmount)
+                val depositPaid = obj.optBoolean("depositPaid", false)
+                    || obj.optString("depositPaid").equals("Sim", ignoreCase = true)
+                    || obj.optString("sinalPago").equals("Sim", ignoreCase = true)
+                val paymentMethod = obj.optString("paymentMethod", obj.optString("formaPagamento", "PIX"))
+                val paymentStatus = obj.optString("paymentStatus", if (depositPaid) "Sinal Pago (50%)" else "Aguardando Sinal")
+
+                val statusType = when {
+                    rawStatus.contains("Conclu", ignoreCase = true) -> TripStatusType.CONCLUIDO
+                    rawStatus.contains("A caminho", ignoreCase = true) || rawStatus.contains("Andamento", ignoreCase = true) -> TripStatusType.EM_ANDAMENTO
+                    rawStatus.contains("Confirmad", ignoreCase = true) -> TripStatusType.CONFIRMADO
+                    rawStatus.contains("Cancel", ignoreCase = true) -> TripStatusType.RECUSADO
+                    assignedDriver.isNullOrBlank() -> TripStatusType.LIVRE_NA_FROTA
+                    else -> TripStatusType.PENDENTE_ACEITE
+                }
+
+                list.add(
+                    TripItem(
+                        id = id,
+                        code = code,
+                        transferType = tripType,
+                        timeLabel = "$time • $date",
+                        date = date,
+                        status = statusType,
+                        statusBadgeText = when (statusType) {
+                            TripStatusType.CONFIRMADO -> "Confirmado"
+                            TripStatusType.PENDENTE_ACEITE -> "Aguardando Aceite"
+                            TripStatusType.LIVRE_NA_FROTA -> "Livre na Frota"
+                            TripStatusType.EM_ANDAMENTO -> "Em Rota"
+                            TripStatusType.CONCLUIDO -> "Concluído"
+                            TripStatusType.RECUSADO -> "Recusado"
+                            TripStatusType.AGENDADO -> "Agendado"
+                        },
+                        isAvailableToClaim = assignedDriver.isNullOrBlank(),
+                        isAssignedToMe = false, // will be resolved per driver
+                        isAcceptedByDriver = statusType == TripStatusType.CONFIRMADO || statusType == TripStatusType.EM_ANDAMENTO,
+                        driverId = null,
+                        assignedDriverName = assignedDriver,
+                        driverVehicle = driverVehicle,
+                        origin = RoutePoint(
+                            badge = "A",
+                            categoryTag = "Origem",
+                            title = orig,
+                            subtitle = origDet.ifEmpty { "Ponto de Encontro" }
+                        ),
+                        destination = RoutePoint(
+                            badge = "B",
+                            categoryTag = "Destino",
+                            title = dest,
+                            subtitle = destDet.ifEmpty { "Desembarque" }
+                        ),
+                        distanceInfo = "$tripType • Frota Spin 7L",
+                        passengersCount = pax,
+                        luggageInfo = "$luggage malas",
+                        hasChildSeat = childSeat,
+                        notes = notes,
+                        flightNumber = flightNum,
+                        passengerName = obj.optString("customerName", obj.optString("nomeCliente", obj.optString("cliente", "Passageiro"))),
+                        passengerPhone = obj.optString("customerPhone", obj.optString("telefoneCliente", obj.optString("telefone", ""))),
+                        totalPrice = totalPrice,
+                        depositAmount = depositAmount,
+                        remainingAmount = remainingAmount,
+                        depositPaid = depositPaid,
+                        paymentStatus = paymentStatus,
+                        payoutAmount = if (remainingAmount > 0) remainingAmount else totalPrice,
+                        payoutLabel = "Saldo no Embarque",
+                        paymentMethod = paymentMethod
+                    )
+                )
+            }
+            Result.success(list)
         } catch (e: Exception) {
-            Log.w("GoogleSheetsService", "Falha ao consultar reservas da planilha: ${e.message}")
+            Log.w("GoogleSheetsService", "Falha ao consultar reservas do servidor: ${e.message}")
             Result.failure(e)
         }
     }

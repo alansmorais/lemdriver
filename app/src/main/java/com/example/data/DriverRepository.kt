@@ -71,8 +71,8 @@ class DriverRepository(context: Context? = null) {
         _notifications.value = listOf(
             FleetNotification(
                 id = "notif-01",
-                title = "Frota Conectada ao Google Sheets",
-                description = "Planilha LEM: Reservas e escalas ativas da frota Chevrolet Spin 7L.",
+                title = "Frota Conectada ao Servidor Live",
+                description = "Central LEM: Reservas e escalas ativas da frota Chevrolet Spin 7L.",
                 timeAgo = "Agora",
                 isUrgent = false,
                 iconName = "cloud_done"

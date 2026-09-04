@@ -161,7 +161,7 @@ class DriverViewModel(
             val result = repository.syncWithGoogleSheets()
             _isSyncing.value = false
             if (result.isSuccess) {
-                showToast("Planilha sincronizada! ${result.getOrNull()} reservas carregadas.", "cloud_done")
+                showToast("Servidor sincronizado! ${result.getOrNull()} reservas carregadas.", "cloud_done")
             } else {
                 showToast("Conexão ativa com o sistema LEM Motoristas.", "sync")
             }
