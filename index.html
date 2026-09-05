@@ -102,28 +102,28 @@
     </div>
 
     <!-- New Trip Assignment Pop-up Modal -->
-    <div id="assignment-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate200 flex flex-col items-center text-center">
-            <div class="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 mb-3 shadow-inner">
-                <span class="material-symbols-outlined text-3xl animate-pulse">notifications_active</span>
+    <div id="assignment-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-3">
+        <div class="bg-white rounded-3xl max-w-md w-full p-4 md:p-6 max-h-[88vh] overflow-y-auto shadow-2xl border border-slate200 flex flex-col items-center text-center">
+            <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 mb-2 shadow-inner">
+                <span class="material-symbols-outlined text-2xl animate-pulse">notifications_active</span>
             </div>
-            <h3 class="text-xl font-extrabold text-slate900">🚨 NOVA CORRIDA ATRIBUÍDA!</h3>
-            <p class="text-xs text-slate-500 mt-1">A Central de Despacho LEM vinculou uma nova reserva à sua escala.</p>
+            <h3 class="text-lg font-extrabold text-slate900">🚨 NOVA CORRIDA ATRIBUÍDA!</h3>
+            <p class="text-[11px] text-slate-500 mt-0.5">A Central de Despacho LEM vinculou uma nova reserva à sua escala.</p>
             
-            <div id="modal-trip-details" class="w-full bg-slate-100 rounded-2xl p-4 mt-4 text-left space-y-2 border border-slate-200">
+            <div id="modal-trip-details" class="w-full bg-slate-100 rounded-2xl p-3 mt-3 text-left space-y-1.5 border border-slate-200 text-xs">
                 <!-- Injected via JS -->
             </div>
 
-            <div class="flex flex-col w-full gap-2 mt-5">
-                <button onclick="acceptAndStartAssignedTrip()" class="w-full bg-amberVibrant hover:bg-amber-500 text-slate950 font-extrabold py-3.5 rounded-xl shadow-lg flex items-center justify-center space-x-2">
-                    <span class="material-symbols-outlined">navigation</span>
+            <div class="flex flex-col w-full gap-2 mt-4">
+                <button onclick="acceptAndStartAssignedTrip()" class="w-full bg-amberVibrant hover:bg-amber-500 text-slate950 font-extrabold py-3 rounded-xl shadow-lg flex items-center justify-center space-x-2 text-xs">
+                    <span class="material-symbols-outlined text-sm">navigation</span>
                     <span>ACEITAR & INICIAR ROTA</span>
                 </button>
                 <div class="flex gap-2">
-                    <button onclick="viewAssignedTripInList()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate800 font-bold py-2.5 rounded-xl text-xs">
+                    <button onclick="viewAssignedTripInList()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate800 font-bold py-2 rounded-xl text-[11px]">
                         Ver na Lista
                     </button>
-                    <button onclick="closeAssignmentModal()" class="flex-1 bg-slate-900 hover:bg-slate800 text-white font-bold py-2.5 rounded-xl text-xs">
+                    <button onclick="closeAssignmentModal()" class="flex-1 bg-slate-900 hover:bg-slate800 text-white font-bold py-2 rounded-xl text-[11px]">
                         Entendido (OK)
                     </button>
                 </div>
