@@ -3,46 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LEM Motoristas • Litoral em Movimento (Web App iOS/Android)</title>
-    <!-- Tailwind CSS CDN -->
+    <title>LEM Motoristas • Litoral em Movimento</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        slate900: '#0F172A',
-                        slate800: '#1E293B',
-                        slate700: '#334155',
-                        slate500: '#64748B',
-                        slate100: '#F1F5F9',
-                        slateBg: '#F8F9FF',
-                        amberVibrant: '#F59E0B',
-                        amberDeep: '#B45309',
-                        emeraldVibrant: '#059669',
-                        emeraldDark: '#047857',
-                        emeraldLightBg: '#ECFDF5',
-                        brandBlue: '#2563EB',
-                        destRed: '#B91C1C'
+                        slate900: '#0F172A', slate800: '#1E293B', slate700: '#334155',
+                        slate500: '#64748B', slate100: '#F1F5F9', slateBg: '#F8F9FF',
+                        amberVibrant: '#F59E0B', amberDeep: '#B45309',
+                        emeraldVibrant: '#059669', emeraldDark: '#047857', emeraldLightBg: '#ECFDF5',
+                        brandBlue: '#2563EB', destRed: '#B91C1C'
+                    },
+                    animation: {
+                        'spin-slow': 'spin 3s linear infinite',
+                        'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
                     }
                 }
             }
         }
     </script>
-    <!-- Material Symbols -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link rel="manifest" href="web/manifest.json">
     <meta name="theme-color" content="#0F172A">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="LEM Motoristas">
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="h-full bg-slateBg text-slate900 flex flex-col antialiased">
 
-    <!-- Toast Notification Banner -->
     <div id="toast-container" class="fixed top-4 left-4 right-4 z-50 flex flex-col items-center pointer-events-none transition-all duration-300 transform -translate-y-20 opacity-0">
         <div id="toast-box" class="bg-slate900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-3 max-w-md w-full border border-slate700">
             <span id="toast-icon" class="material-symbols-outlined text-amberVibrant text-xl">check_circle</span>
@@ -50,88 +42,529 @@
         </div>
     </div>
 
-    <!-- Main Container -->
     <div id="app" class="flex-1 flex flex-col max-w-lg mx-auto w-full bg-white shadow-xl relative overflow-hidden">
         
-        <!-- Top App Header (Visible when logged in) -->
-        <header id="app-header" class="hidden bg-slate950 text-white px-4 py-3 flex items-center justify-between border-b border-slate800">
+        <header id="app-header" class="hidden bg-slate900 text-white px-4 py-3 flex items-center justify-between border-b border-slate800 shadow-md z-40 relative">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full bg-amberVibrant flex items-center justify-center text-slate900 font-extrabold text-sm" id="header-driver-initials">
-                    ES
+                <div class="w-10 h-10 rounded-full bg-amberVibrant flex items-center justify-center text-slate900 font-extrabold text-sm shadow-inner" id="header-driver-initials">
+                    --
                 </div>
                 <div>
-                    <h1 class="font-bold text-sm tracking-wide text-white" id="header-driver-name">Eduardo Silveira</h1>
-                    <p class="text-xs text-amber-400 font-medium" id="header-vehicle-badge">Spin Premier • SP-LIT7A24</p>
+                    <h1 class="font-bold text-sm tracking-wide text-white" id="header-driver-name">Carregando...</h1>
+                    <p class="text-[10px] text-amber-400 font-medium uppercase tracking-wider" id="header-vehicle-badge">Frota LEM</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="toggleAudioAndPushPermissions()" id="sound-badge" class="bg-emerald-900/60 text-emerald-300 border border-emerald-700 px-2.5 py-1 rounded-full text-xs font-bold flex items-center space-x-1">
-                    <span class="material-symbols-outlined text-sm">volume_up</span>
-                    <span id="sound-status-text">Som Ativo</span>
+                <button onclick="renderChangePassword()" class="w-9 h-9 rounded-full bg-slate800 flex items-center justify-center text-slate-300 hover:bg-slate700 transition-colors">
+                    <span class="material-symbols-outlined text-lg">settings</span>
                 </button>
-                <button onclick="openProfile()" class="w-9 h-9 rounded-full bg-slate800 flex items-center justify-center text-slate300 hover:bg-slate700">
-                    <span class="material-symbols-outlined text-lg">person</span>
+                <button onclick="logout()" class="w-9 h-9 rounded-full bg-slate800 flex items-center justify-center text-destRed hover:bg-slate700 transition-colors">
+                    <span class="material-symbols-outlined text-lg">logout</span>
                 </button>
             </div>
         </header>
 
-        <!-- Dynamic Screen Content Area -->
-        <main class="flex-1 overflow-y-auto pb-24" id="main-content">
-            <!-- Content dynamically rendered via app.js -->
-        </main>
+        <main class="flex-1 overflow-y-auto pb-20 relative bg-slateBg" id="main-content">
+            </main>
 
-        <!-- Bottom Navigation Bar (Visible when logged in) -->
-        <nav id="bottom-nav" class="hidden absolute bottom-0 left-0 right-0 bg-slate950 border-t border-slate800 px-3 py-2 flex items-center justify-around z-30">
-            <button onclick="switchTab('viagens')" id="nav-viagens" class="flex flex-col items-center text-amberVibrant transition-all">
+        <nav id="bottom-nav" class="hidden absolute bottom-0 left-0 right-0 bg-slate900 border-t border-slate800 px-3 py-2 flex items-center justify-around z-30 pb-safe">
+            <button onclick="renderDashboard()" class="flex flex-col items-center text-amberVibrant transition-all">
+                <span class="material-symbols-outlined text-2xl">radar</span>
+                <span class="text-[10px] font-bold mt-0.5">Radar</span>
+            </button>
+            <button onclick="renderMyTrips()" class="flex flex-col items-center text-slate-400 hover:text-white transition-all">
                 <span class="material-symbols-outlined text-2xl">directions_car</span>
-                <span class="text-[10px] font-bold mt-0.5">Escalas</span>
-            </button>
-            <button onclick="switchTab('rota')" id="nav-rota" class="flex flex-col items-center text-slate-400 hover:text-white transition-all">
-                <span class="material-symbols-outlined text-2xl">navigation</span>
-                <span class="text-[10px] font-semibold mt-0.5">Em Rota</span>
-            </button>
-            <button onclick="switchTab('ganhos')" id="nav-ganhos" class="flex flex-col items-center text-slate-400 hover:text-white transition-all">
-                <span class="material-symbols-outlined text-2xl">payments</span>
-                <span class="text-[10px] font-semibold mt-0.5">Ganhos</span>
-            </button>
-            <button onclick="switchTab('perfil')" id="nav-perfil" class="flex flex-col items-center text-slate-400 hover:text-white transition-all">
-                <span class="material-symbols-outlined text-2xl">badge</span>
-                <span class="text-[10px] font-semibold mt-0.5">Perfil</span>
+                <span class="text-[10px] font-semibold mt-0.5">Minhas Corridas</span>
             </button>
         </nav>
     </div>
 
-    <!-- New Trip Assignment Pop-up Modal -->
-    <div id="assignment-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-3">
-        <div class="bg-white rounded-3xl max-w-md w-full p-4 md:p-6 max-h-[88vh] overflow-y-auto shadow-2xl border border-slate200 flex flex-col items-center text-center">
-            <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 mb-2 shadow-inner">
-                <span class="material-symbols-outlined text-2xl animate-pulse">notifications_active</span>
+    <div id="assignment-modal" class="fixed inset-0 z-50 bg-slate900/80 backdrop-blur-sm hidden items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 flex flex-col items-center text-center transform scale-95 transition-transform" id="modal-card">
+            <div class="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-amberVibrant mb-3 shadow-inner relative">
+                <div class="absolute inset-0 rounded-full border-4 border-amber-200 animate-ping opacity-50"></div>
+                <span class="material-symbols-outlined text-3xl z-10">airport_shuttle</span>
             </div>
-            <h3 class="text-lg font-extrabold text-slate900">🚨 NOVA CORRIDA ATRIBUÍDA!</h3>
-            <p class="text-[11px] text-slate-500 mt-0.5">A Central de Despacho LEM vinculou uma nova reserva à sua escala.</p>
+            <h3 class="text-xl font-extrabold text-slate900 tracking-tight">NOVA CORRIDA!</h3>
+            <p class="text-xs text-slate-500 mt-1">A Central vinculou uma nova reserva a você.</p>
             
-            <div id="modal-trip-details" class="w-full bg-slate-100 rounded-2xl p-3 mt-3 text-left space-y-1.5 border border-slate-200 text-xs">
-                <!-- Injected via JS -->
-            </div>
-
-            <div class="flex flex-col w-full gap-2 mt-4">
-                <button onclick="acceptAndStartAssignedTrip()" class="w-full bg-amberVibrant hover:bg-amber-500 text-slate950 font-extrabold py-3 rounded-xl shadow-lg flex items-center justify-center space-x-2 text-xs">
-                    <span class="material-symbols-outlined text-sm">navigation</span>
-                    <span>ACEITAR & INICIAR ROTA</span>
-                </button>
-                <div class="flex gap-2">
-                    <button onclick="viewAssignedTripInList()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate800 font-bold py-2 rounded-xl text-[11px]">
-                        Ver na Lista
-                    </button>
-                    <button onclick="closeAssignmentModal()" class="flex-1 bg-slate-900 hover:bg-slate800 text-white font-bold py-2 rounded-xl text-[11px]">
-                        Entendido (OK)
-                    </button>
+            <div id="modal-trip-details" class="w-full bg-slateBg rounded-2xl p-4 mt-5 text-left space-y-3 border border-slate-200">
                 </div>
+
+            <div class="flex flex-col w-full gap-2 mt-6">
+                <button id="btn-accept-trip" class="w-full bg-amberVibrant hover:bg-amber-500 text-slate900 font-extrabold py-3.5 rounded-xl shadow-lg flex items-center justify-center space-x-2 transition-transform active:scale-95">
+                    <span class="material-symbols-outlined">navigation</span>
+                    <span>ACEITAR & INICIAR</span>
+                </button>
+                <button onclick="closeModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl text-xs transition-colors">
+                    Esconder Alerta
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Application JavaScript -->
-    <script src="web/app.js"></script>
+    <script>
+        // ==========================================
+        // CONFIGURAÇÃO DO BACKEND
+        // ==========================================
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzVXHlSLJykQpgwJBs6OEiLZx70lBstHfQNkB7EvvL275foVcxRCSAzxDUKb8gqEoilNA/exec';
+        
+        // Estado Global
+        let driversList = [];
+        let systemConfigs = {};
+        let currentDriver = null;
+        let activeTrips = [];
+        let pollingInterval = null;
+
+        // Início da Aplicação
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedDriverId = localStorage.getItem('lem_driver_id');
+            if (savedDriverId) {
+                showLoadingScreen("Restaurando sessão com a nuvem...");
+                fetchInitialData().then(() => {
+                    const driver = driversList.find(d => d.id === savedDriverId);
+                    if (driver) {
+                        setDriverSession(driver);
+                    } else {
+                        renderLogin();
+                    }
+                });
+            } else {
+                renderLogin();
+            }
+        });
+
+        // ==========================================
+        // CORE API E UTILIDADES
+        // ==========================================
+        async function fetchAPI(action, payload = null) {
+            try {
+                let url = `${API_URL}?action=${action}`;
+                let options = { method: 'GET' };
+                
+                if (payload) {
+                    options = {
+                        method: 'POST',
+                        body: JSON.stringify({ action: action, ...payload })
+                    };
+                    url = API_URL; 
+                }
+                
+                const response = await fetch(url, options);
+                return await response.json();
+            } catch (error) {
+                console.error("API Error:", error);
+                throw error;
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const icon = document.getElementById('toast-icon');
+            const msg = document.getElementById('toast-msg');
+            
+            msg.innerText = message;
+            icon.innerText = type === 'success' ? 'check_circle' : 'error';
+            icon.className = `material-symbols-outlined text-xl ${type === 'success' ? 'text-emeraldVibrant' : 'text-destRed'}`;
+            
+            container.classList.remove('opacity-0', '-translate-y-20');
+            container.classList.add('opacity-100', 'translate-y-0');
+            
+            setTimeout(() => {
+                container.classList.remove('opacity-100', 'translate-y-0');
+                container.classList.add('opacity-0', '-translate-y-20');
+            }, 3000);
+        }
+
+        // ==========================================
+        // PASSO 1: LOGIN
+        // ==========================================
+        async function fetchInitialData() {
+            try {
+                // Fetch drivers and configurations simultaneously
+                const [drivers, config] = await Promise.all([
+                    fetchAPI('getDrivers'),
+                    fetchAPI('getConfig')
+                ]);
+                driversList = drivers;
+                systemConfigs = config;
+            } catch (e) {
+                showToast("Erro ao conectar com o banco de dados.", "error");
+            }
+        }
+
+        async function renderLogin() {
+            document.getElementById('app-header').classList.add('hidden');
+            document.getElementById('bottom-nav').classList.add('hidden');
+            const main = document.getElementById('main-content');
+            
+            main.innerHTML = `
+                <div class="flex flex-col items-center justify-center min-h-full p-6 text-center">
+                    <div class="w-20 h-20 bg-slate900 rounded-2xl flex items-center justify-center mb-6 shadow-xl">
+                        <span class="material-symbols-outlined text-amberVibrant text-4xl">local_taxi</span>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate900 tracking-tight">Portal da Frota</h2>
+                    <p class="text-slate-500 text-sm mt-2 mb-8">Selecione seu perfil e digite sua senha.</p>
+                    
+                    <div class="w-full max-w-sm space-y-4">
+                        <div class="text-left">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Seu Nome / Veículo</label>
+                            <select id="login-driver" class="w-full mt-1 bg-white border border-slate-200 rounded-xl p-3.5 text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-amberVibrant shadow-sm">
+                                <option value="">Conectando à base de dados...</option>
+                            </select>
+                        </div>
+                        <div class="text-left">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Senha (Padrão: 1234)</label>
+                            <input type="password" id="login-pwd" placeholder="••••" class="w-full mt-1 bg-white border border-slate-200 rounded-xl p-3.5 text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-amberVibrant shadow-sm">
+                        </div>
+                        <button id="btn-login" onclick="handleLogin()" class="w-full bg-slate900 hover:bg-slate800 text-white font-bold py-4 rounded-xl mt-4 shadow-lg transition-transform active:scale-95 flex justify-center items-center">
+                            Acessar Sistema <span class="material-symbols-outlined ml-2 text-amberVibrant">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            await fetchInitialData();
+            const select = document.getElementById('login-driver');
+            select.innerHTML = '<option value="">Selecione seu perfil...</option>';
+            driversList.forEach(d => {
+                select.innerHTML += `<option value="${d.id}">${d.name} (${d.vehicleModel})</option>`;
+            });
+        }
+
+        function handleLogin() {
+            const selectedId = document.getElementById('login-driver').value;
+            const pwdInput = document.getElementById('login-pwd').value;
+            
+            if (!selectedId || !pwdInput) {
+                showToast("Preencha o perfil e a senha", "error");
+                return;
+            }
+
+            const driver = driversList.find(d => d.id === selectedId);
+            
+            // Busca a senha salva na aba "Configuracoes" do Google Sheets
+            const cloudPasswordKey = `PWD_DRV_${driver.id}`;
+            const correctPassword = systemConfigs[cloudPasswordKey] || '1234'; 
+
+            if (pwdInput !== correctPassword) {
+                showToast("Senha incorreta!", "error");
+                return;
+            }
+
+            localStorage.setItem('lem_driver_id', driver.id);
+            setDriverSession(driver);
+        }
+
+        function setDriverSession(driver) {
+            currentDriver = driver;
+            
+            document.getElementById('app-header').classList.remove('hidden');
+            document.getElementById('bottom-nav').classList.remove('hidden');
+            document.getElementById('header-driver-name').innerText = driver.name.split(' ')[0];
+            document.getElementById('header-vehicle-badge').innerText = driver.plate || 'FROTA LEM';
+            
+            const initials = driver.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('header-driver-initials').innerText = initials;
+
+            if (pollingInterval) clearInterval(pollingInterval);
+            pollingInterval = setInterval(fetchMyTransfers, 30000);
+            
+            renderDashboard();
+            fetchMyTransfers();
+        }
+
+        function logout() {
+            if(confirm("Tem certeza que deseja sair? Você não receberá alertas de corrida.")) {
+                localStorage.removeItem('lem_driver_id');
+                currentDriver = null;
+                if (pollingInterval) clearInterval(pollingInterval);
+                renderLogin();
+            }
+        }
+
+        // ==========================================
+        // PASSO 2: TROCAR SENHA (SALVA NA NUVEM)
+        // ==========================================
+        function renderChangePassword() {
+            const main = document.getElementById('main-content');
+            main.innerHTML = `
+                <div class="p-5">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <button onclick="renderDashboard()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow border border-slate-200 text-slate-600">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                        </button>
+                        <h2 class="text-xl font-bold text-slate900">Segurança Cloud</h2>
+                    </div>
+                    
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <p class="text-sm text-slate-500 mb-2">Sua senha será atualizada e sincronizada com a Central (Aba Configurações).</p>
+                        
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Senha Atual</label>
+                            <input type="password" id="pwd-current" class="w-full mt-1 bg-slateBg border border-slate-200 rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-amberVibrant">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Nova Senha</label>
+                            <input type="password" id="pwd-new" class="w-full mt-1 bg-slateBg border border-slate-200 rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-amberVibrant">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Confirmar Nova Senha</label>
+                            <input type="password" id="pwd-confirm" class="w-full mt-1 bg-slateBg border border-slate-200 rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-amberVibrant">
+                        </div>
+                        
+                        <button id="btn-save-pwd" onclick="saveNewPassword()" class="w-full bg-slate900 hover:bg-slate800 text-white font-bold py-4 rounded-xl mt-6 shadow-md transition-transform active:scale-95 flex items-center justify-center space-x-2">
+                            <span class="material-symbols-outlined">cloud_sync</span>
+                            <span>Sincronizar Nova Senha</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function saveNewPassword() {
+            const curr = document.getElementById('pwd-current').value;
+            const newPwd = document.getElementById('pwd-new').value;
+            const conf = document.getElementById('pwd-confirm').value;
+            const btn = document.getElementById('btn-save-pwd');
+
+            const cloudPasswordKey = `PWD_DRV_${currentDriver.id}`;
+            const correctPassword = systemConfigs[cloudPasswordKey] || '1234';
+
+            if (curr !== correctPassword) {
+                showToast("A senha atual está incorreta.", "error");
+                return;
+            }
+            if (newPwd.length < 4) {
+                showToast("A nova senha deve ter no mínimo 4 caracteres.", "error");
+                return;
+            }
+            if (newPwd !== conf) {
+                showToast("As novas senhas não coincidem.", "error");
+                return;
+            }
+
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin">sync</span><span>Sincronizando...</span>`;
+            btn.disabled = true;
+
+            try {
+                // Post to Google Sheets "Configuracoes" tab
+                const response = await fetchAPI('updateConfig', {
+                    key: cloudPasswordKey,
+                    value: newPwd
+                });
+
+                if(response.status === 'success') {
+                    systemConfigs[cloudPasswordKey] = newPwd; // Update local cache
+                    showToast("Senha sincronizada com sucesso!");
+                    setTimeout(renderDashboard, 1500);
+                } else {
+                    showToast("Erro ao gravar na nuvem.", "error");
+                }
+            } catch (e) {
+                showToast("Erro de conexão.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span class="material-symbols-outlined">cloud_sync</span><span>Sincronizar Nova Senha</span>`;
+            }
+        }
+
+        // ==========================================
+        // PASSO 3: AGUARDAR E ACEITAR CORRIDA
+        // ==========================================
+        function renderDashboard() {
+            const main = document.getElementById('main-content');
+            main.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full pt-20 px-6 text-center">
+                    <div class="relative w-40 h-40 mb-8 flex items-center justify-center">
+                        <div class="absolute inset-0 bg-amberVibrant/20 rounded-full animate-ping-slow"></div>
+                        <div class="absolute inset-4 bg-amberVibrant/30 rounded-full animate-ping-slow" style="animation-delay: 1s"></div>
+                        <div class="absolute inset-8 bg-amberVibrant/40 rounded-full animate-ping-slow" style="animation-delay: 1.5s"></div>
+                        <div class="relative z-10 w-20 h-20 bg-slate900 rounded-full shadow-2xl flex items-center justify-center border-4 border-amberVibrant">
+                            <span class="material-symbols-outlined text-4xl text-amberVibrant animate-pulse">radar</span>
+                        </div>
+                    </div>
+                    
+                    <h2 class="text-2xl font-extrabold text-slate900 tracking-tight">Radar Ativo</h2>
+                    <p class="text-slate-500 text-sm mt-3 leading-relaxed">
+                        Mantenha o aplicativo aberto.<br>Buscando novas viagens atribuídas a você...
+                    </p>
+                    
+                    <div class="mt-8 inline-flex items-center space-x-2 bg-emeraldLightBg px-4 py-2 rounded-full border border-emerald-200">
+                        <div class="w-2 h-2 rounded-full bg-emeraldVibrant animate-pulse"></div>
+                        <span class="text-xs font-bold text-emeraldDark uppercase tracking-wider">Servidor Online</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showLoadingScreen(msg) {
+            document.getElementById('main-content').innerHTML = `
+                <div class="flex flex-col items-center justify-center min-h-full p-6 text-center">
+                    <div class="w-12 h-12 border-4 border-amberVibrant border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p class="text-slate-500 font-medium">${msg}</p>
+                </div>
+            `;
+        }
+
+        async function fetchMyTransfers() {
+            if(!currentDriver) return;
+            try {
+                const reservations = await fetchAPI('getReservations');
+                
+                const myFirstName = currentDriver.name.trim().toLowerCase().split(' ')[0];
+                
+                activeTrips = reservations.filter(res => {
+                    const resDriver = (res.assignedDriverName || "").trim().toLowerCase();
+                    return resDriver.split(' ')[0] === myFirstName;
+                });
+
+                checkForNewAssignments();
+            } catch (e) {
+                console.error("Erro ao verificar corridas:", e);
+            }
+        }
+
+        function checkForNewAssignments() {
+            const newTrip = activeTrips.find(t => t.status === 'Pendente' || t.status === 'Confirmado');
+            if (newTrip) openModal(newTrip);
+        }
+
+        function openModal(trip) {
+            const modal = document.getElementById('assignment-modal');
+            const details = document.getElementById('modal-trip-details');
+            
+            details.innerHTML = `
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2 mb-2">
+                    <span class="text-xs font-bold text-slate-400">#${trip.code}</span>
+                    <span class="text-xs font-bold text-amberDeep bg-amber-100 px-2 py-1 rounded">${trip.date} • ${trip.time}</span>
+                </div>
+                <div class="flex space-x-3 items-start">
+                    <div class="flex flex-col items-center mt-1">
+                        <span class="material-symbols-outlined text-emeraldVibrant text-sm">radio_button_checked</span>
+                        <div class="w-0.5 h-6 bg-slate-300 my-0.5"></div>
+                        <span class="material-symbols-outlined text-destRed text-sm">location_on</span>
+                    </div>
+                    <div class="flex-1 space-y-3">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase">Origem</p>
+                            <p class="text-sm font-bold text-slate900 leading-tight">${trip.origin}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase">Destino</p>
+                            <p class="text-sm font-bold text-slate900 leading-tight">${trip.destination}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-200">
+                    <div class="bg-white p-2 rounded border border-slate-100">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Passageiros</p>
+                        <p class="text-sm font-bold text-slate900">${trip.passengers} <span class="material-symbols-outlined text-xs align-middle">person</span></p>
+                    </div>
+                    <div class="bg-white p-2 rounded border border-slate-100">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">A Receber</p>
+                        <p class="text-sm font-bold text-emeraldVibrant">R$ ${Number(trip.remainingAmount).toFixed(2)}</p>
+                    </div>
+                </div>
+            `;
+
+            const btn = document.getElementById('btn-accept-trip');
+            btn.onclick = () => acceptTrip(trip);
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            try { if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]); } catch (e) {}
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('assignment-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function acceptTrip(trip) {
+            const btn = document.getElementById('btn-accept-trip');
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin">sync</span><span>Sincronizando...</span>`;
+            btn.disabled = true;
+
+            try {
+                const result = await fetchAPI('updateStatus', {
+                    id: trip.id,
+                    status: 'A caminho' 
+                });
+
+                if (result.status === 'success') {
+                    showToast("Corrida Aceita! Dirija com segurança.", "success");
+                    closeModal();
+                    await fetchMyTransfers(); 
+                    renderMyTrips(); 
+                } else {
+                    showToast("Erro ao aceitar corrida no sistema.", "error");
+                }
+            } catch (e) {
+                showToast("Falha de conexão. Tente novamente.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span class="material-symbols-outlined">navigation</span><span>ACEITAR & INICIAR</span>`;
+            }
+        }
+
+        function renderMyTrips() {
+            const main = document.getElementById('main-content');
+            if (activeTrips.length === 0) {
+                main.innerHTML = `
+                    <div class="p-6 pt-10 text-center">
+                        <span class="material-symbols-outlined text-slate-300 text-6xl mb-4">inbox</span>
+                        <h3 class="text-lg font-bold text-slate900">Nenhuma viagem aceita</h3>
+                        <p class="text-sm text-slate-500 mt-1">Volte para o radar para aguardar novas solicitações.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let cardsHtml = '<div class="p-4 space-y-4 pt-6">';
+            cardsHtml += `<h2 class="text-xl font-extrabold text-slate900 mb-4 tracking-tight px-2">Suas Viagens</h2>`;
+            
+            const sorted = [...activeTrips].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            sorted.forEach(trip => {
+                let statusBadge = '';
+                if (trip.status === 'Pendente' || trip.status === 'Confirmado') statusBadge = '<span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded">Novo - Aceitar</span>';
+                else if (trip.status === 'A caminho') statusBadge = '<span class="bg-brandBlue text-white text-xs font-bold px-2 py-1 rounded shadow">Em Andamento</span>';
+                else if (trip.status === 'Concluído') statusBadge = '<span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded">Concluída</span>';
+
+                cardsHtml += `
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
+                        <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-3">
+                            <span class="text-xs font-bold text-slate-400">${trip.date} • ${trip.time}</span>
+                            ${statusBadge}
+                        </div>
+                        <div class="mb-3 space-y-1">
+                            <p class="text-sm font-bold text-slate900 truncate">📍 De: ${trip.origin}</p>
+                            <p class="text-sm font-bold text-slate900 truncate">🏁 Para: ${trip.destination}</p>
+                        </div>
+                        <div class="bg-slateBg p-3 rounded-xl flex justify-between items-center border border-slate-100">
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">Receber Cliente</p>
+                                <p class="text-sm font-extrabold text-emeraldVibrant">R$ ${Number(trip.remainingAmount).toFixed(2)}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">Cliente</p>
+                                <p class="text-sm font-bold text-slate-700 truncate max-w-[100px]">${trip.customerName}</p>
+                            </div>
+                        </div>
+                        ${(trip.status === 'Pendente' || trip.status === 'Confirmado') ? `
+                            <button onclick="openModal(${JSON.stringify(trip).replace(/"/g, '&quot;')})" class="w-full mt-4 bg-slate900 text-white font-bold py-3 rounded-xl text-sm hover:bg-slate800">
+                                Abrir Detalhes para Aceitar
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            cardsHtml += '</div>';
+            main.innerHTML = cardsHtml;
+        }
+    </script>
 </body>
 </html>
